@@ -104,7 +104,7 @@ else:
         file_minh_chung = st.file_uploader("Tải lên Báo cáo chi tiết (File Word/PDF có dấu đỏ):", type=["pdf", "docx"])
 
         st.write("---")
-        submitted = st.form_submit_button("🚀 GỬI BÁO CÁO LÊN TỈNH ỦY", use_container_width=True)
+        submitted = st.form_submit_button("🚀 GỬI BÁO CÁO", use_container_width=True)
 
         if submitted:
             if don_vi == "Chọn đơn vị...":
