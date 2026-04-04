@@ -30,16 +30,20 @@ st.write("---")
 with st.form("form_bao_cao"):
     
     st.markdown('<div class="section-header">📍 PHẦN 1: THÔNG TIN ĐƠN VỊ</div>', unsafe_allow_html=True)
+    
+    # Danh sách 124 đơn vị hành chính cấp xã, phường tỉnh Tuyên Quang
     danh_sach_don_vi = [
-        "Chọn đơn vị...", "Phường Minh Xuân", "Phường Tân Quang", "Xã Lưỡng Vượng", 
-        "Phường Minh Khai", "Phường Nguyễn Trãi", "Xã Phương Độ", "Xã Thanh Thủy", 
-        "Xã Bắc Mê", "Thị trấn Yên Phú", "Xã Yên Lập"
+        "Chọn đơn vị...", 
+        # CÁC PHƯỜNG
+        "Phường Mỹ Lâm", "Phường Minh Xuân", "Phường Nông Tiến", "Phường An Tường", "Phường Bình Thuận", "Phường Hà Giang 1", "Phường Hà Giang 2",
+        # CÁC XÃ
+        "Xã Thượng Lâm", "Xã Lâm Bình", "Xã Minh Quang", "Xã Bình An", "Xã Côn Lôn", "Xã Yên Hoa", "Xã Thượng Nông", "Xã Hồng Thái", "Xã Nà Hang", "Xã Tân Mỹ", "Xã Yên Lập", "Xã Tân An", "Xã Chiêm Hóa", "Xã Hòa An", "Xã Kiên Đài", "Xã Tri Phú", "Xã Kim Bình", "Xã Yên Nguyên", "Xã Yên Phú", "Xã Bạch Xa", "Xã Phù Lưu", "Xã Hàm Yên", "Xã Bình Xa", "Xã Thái Sơn", "Xã Thái Hòa", "Xã Hùng Lợi", "Xã Trung Sơn", "Xã Thái Bình", "Xã Tân Long", "Xã Xuân Vân", "Xã Lực Hành", "Xã Yên Sơn", "Xã Nhữ Khê", "Xã Tân Trào", "Xã Minh Thanh", "Xã Sơn Dương", "Xã Bình Ca", "Xã Tân Thanh", "Xã Sơn Thủy", "Xã Phú Lương", "Xã Trường Sinh", "Xã Hồng Sơn", "Xã Đông Thọ", "Xã Lũng Cú", "Xã Đồng Văn", "Xã Sà Phìn", "Xã Phố Bảng", "Xã Lũng Phìn", "Xã Sủng Máng", "Xã Sơn Vĩ", "Xã Mèo Vạc", "Xã Khâu Vai", "Xã Niêm Sơn", "Xã Tát Ngà", "Xã Thắng Mố", "Xã Bạch Đích", "Xã Yên Minh", "Xã Mậu Duệ", "Xã Du Già", "Xã Đường Thượng", "Xã Lùng Tám", "Xã Cán Tỷ", "Xã Nghĩa Thuận", "Xã Quản Bạ", "Xã Tùng Vài", "Xã Yên Cường", "Xã Đường Hồng", "Xã Bắc Mê", "Xã Minh Ngọc", "Xã Ngọc Đường", "Xã Lao Chải", "Xã Thanh Thủy", "Xã Phú Linh", "Xã Linh Hồ", "Xã Bạch Ngọc", "Xã Vị Xuyên", "Xã Việt Lâm", "Xã Tân Quang", "Xã Đồng Tâm", "Xã Liên Hiệp", "Xã Bằng Hành", "Xã Bắc Quang", "Xã Hùng An", "Xã Vĩnh Tuy", "Xã Đồng Yên", "Xã Tiên Yên", "Xã Xuân Giang", "Xã Bằng Lang", "Xã Yên Thành", "Xã Quang Bình", "Xã Tân Trịnh", "Xã Thông Nguyên", "Xã Hồ Thầu", "Xã Nậm Dịch", "Xã Tân Tiến", "Xã Hoàng Su Phì", "Xã Thàng Tín", "Xã Bản Máy", "Xã Pờ Ly Ngài", "Xã Xín Mần", "Xã Pà Vầy Sủ", "Xã Nấm Dẩn", "Xã Trung Thịnh", "Xã Khuôn Lùng", "Xã Trung Hà", "Xã Kiến Thiết", "Xã Hùng Đức", "Xã Minh Sơn", "Xã Minh Tân", "Xã Thuận Hòa", "Xã Tùng Bá", "Xã Thượng Sơn", "Xã Cao Bồ", "Xã Ngọc Long", "Xã Giáp Trung", "Xã Tiên Nguyên", "Xã Quảng Nguyên"
     ]
     don_vi = st.selectbox("Tên đơn vị (Xã/Phường/Thị trấn):", danh_sach_don_vi)
     
     col1, col2 = st.columns(2)
     with col1:
-        ky_bao_cao = st.selectbox("Kỳ báo cáo:", ["Tháng 1", "Tháng 2", "Tháng 3", "Quý I", "6 Tháng", "Năm"])
+        ky_bao_cao = st.selectbox("Kỳ báo cáo:", [f"Tháng {i}" for i in range(1, 13)])
     with col2:
         nguoi_lap = st.text_input("Họ tên người lập biểu:")
 
@@ -61,7 +65,7 @@ with st.form("form_bao_cao"):
 
     st.markdown('<div class="section-header">🚀 PHẦN 4: CHUYỂN ĐỔI SỐ (Theo KH 2026)</div>', unsafe_allow_html=True)
     ky_so = st.slider("1. Tỷ lệ văn bản xử lý và ký số (%):", 0, 100, 50)
-    zalo_oa = st.radio("2. Tiến độ triển khai Zalo / Mini App:", ["Đã vận hành thường xuyên", "Đang thử nghiệm", "Chưa triển khai"])
+    zalo_oa = st.radio("2. Tiến độ thực hiện Kế hoạch Chuyển đổi số:", ["Đã hoàn thành tốt các chỉ tiêu", "Đang triển khai thực hiện", "Chưa thực hiện"])
     c5, c6 = st.columns(2)
     with c5:
         dl_truc_tuyen = st.number_input("3. Tỷ lệ thu thập DLXH qua MXH (%):", min_value=0, max_value=100, step=1)
@@ -104,7 +108,7 @@ with st.form("form_bao_cao"):
                 }
                 
                 # Link ống nước mới nhất của bạn đã được gắn vào đây:
-                WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzXo2dee4d9SPJBrnDw4Uza36IbVKJ5HmSV3knpIIteYXQZsBgfZU-vPkT7VL62X-6i/exec"
+                WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwD7MM9lYZYfuF-Re7Xq1finPmGTrLNGwPCONjsCWqyIrn3k7a6oDBFsa0J_PjR_-Ew/exec"
                 
                 try:
                     response = requests.post(WEB_APP_URL, json=data)
