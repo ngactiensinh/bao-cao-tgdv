@@ -104,7 +104,7 @@ with st.form("form_bao_cao"):
                 }
                 
                 # Link ống nước mới nhất của bạn đã được gắn vào đây:
-                WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwD7MM9lYZYfuF-Re7Xq1finPmGTrLNGwPCONjsCWqyIrn3k7a6oDBFsa0J_PjR_-Ew/exec"
+                WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzXo2dee4d9SPJBrnDw4Uza36IbVKJ5HmSV3knpIIteYXQZsBgfZU-vPkT7VL62X-6i/exec"
                 
                 try:
                     response = requests.post(WEB_APP_URL, json=data)
