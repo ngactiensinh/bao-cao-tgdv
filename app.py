@@ -70,7 +70,8 @@ with st.form("form_bao_cao"):
     with c5:
         dl_truc_tuyen = st.number_input("3. Tỷ lệ thu thập DLXH qua MXH (%):", min_value=0, max_value=100, step=1)
     with c6:
-        nhan_luc_ai = st.number_input("4. Số cán bộ được tập huấn AI:", min_value=0, step=1)
+        # ĐÃ SỬA DÒNG NÀY THEO Ý CỦA SẾP
+        nhan_luc_ai = st.number_input("4. Số cán bộ được tập huấn về Công nghệ số:", min_value=0, step=1)
 
     st.markdown('<div class="section-header">📝 PHẦN 5: MINH CHỨNG</div>', unsafe_allow_html=True)
     file_minh_chung = st.file_uploader("Tải lên Báo cáo chi tiết (File Word/PDF có dấu đỏ):", type=["pdf", "docx"])
@@ -107,7 +108,7 @@ with st.form("form_bao_cao"):
                     "file_base64": file_base64, "file_name": file_name, "file_mimeType": file_mimeType
                 }
                 
-                # Link ống nước mới nhất của bạn đã được gắn vào đây:
+                # Link ống nước mới nhất
                 WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwD7MM9lYZYfuF-Re7Xq1finPmGTrLNGwPCONjsCWqyIrn3k7a6oDBFsa0J_PjR_-Ew/exec"
                 
                 try:
