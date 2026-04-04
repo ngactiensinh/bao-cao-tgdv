@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import base64
 
 # --- CẤU HÌNH TRANG ---
 st.set_page_config(page_title="Báo cáo TGDV - Tuyên Quang", page_icon="🌟", layout="centered")
@@ -29,7 +30,6 @@ st.write("---")
 with st.form("form_bao_cao"):
     
     st.markdown('<div class="section-header">📍 PHẦN 1: THÔNG TIN ĐƠN VỊ</div>', unsafe_allow_html=True)
-    # Danh sách cấp xã/phường trực thuộc tỉnh (Đã cập nhật theo hệ thống chính quyền 2 cấp)
     danh_sach_don_vi = [
         "Chọn đơn vị...", "Phường Minh Xuân", "Phường Tân Quang", "Xã Lưỡng Vượng", 
         "Phường Minh Khai", "Phường Nguyễn Trãi", "Xã Phương Độ", "Xã Thanh Thủy", 
@@ -68,6 +68,9 @@ with st.form("form_bao_cao"):
     with c6:
         nhan_luc_ai = st.number_input("4. Số cán bộ được tập huấn AI:", min_value=0, step=1)
 
+    st.markdown('<div class="section-header">📝 PHẦN 5: MINH CHỨNG</div>', unsafe_allow_html=True)
+    file_minh_chung = st.file_uploader("Tải lên Báo cáo chi tiết (File Word/PDF có dấu đỏ):", type=["pdf", "docx"])
+
     st.write("---")
     submitted = st.form_submit_button("🚀 GỬI BÁO CÁO LÊN TỈNH ỦY", use_container_width=True)
 
@@ -77,22 +80,36 @@ with st.form("form_bao_cao"):
         elif not nguoi_lap:
             st.warning("⚠️ Đồng chí vui lòng điền họ tên người lập biểu!")
         else:
-            with st.spinner("⏳ Đang gửi dữ liệu lên máy chủ Tỉnh ủy..."):
+            with st.spinner("⏳ Đang mã hóa file và gửi dữ liệu lên máy chủ Tỉnh ủy..."):
+                
+                # Xử lý file minh chứng (Mã hóa Base64)
+                file_base64 = ""
+                file_name = ""
+                file_mimeType = ""
+                
+                if file_minh_chung is not None:
+                    bytes_data = file_minh_chung.getvalue()
+                    file_base64 = base64.b64encode(bytes_data).decode('utf-8')
+                    # Đổi tên file cho dễ quản lý: TenXa_KyBaoCao_TenFileGoc
+                    file_name = f"{don_vi}_{ky_bao_cao}_{file_minh_chung.name}"
+                    file_mimeType = file_minh_chung.type
+
                 # Gom dữ liệu lại thành 1 gói
                 data = {
                     "don_vi": don_vi, "ky_bao_cao": ky_bao_cao, "nguoi_lap": nguoi_lap,
                     "so_hoi_nghi": so_hoi_nghi, "ty_le_dang_vien": ty_le_dang_vien, "tin_bai": tin_bai,
                     "mo_hinh_dv": mo_hinh_dv, "vu_viec": vu_viec,
-                    "ky_so": ky_so, "zalo_oa": zalo_oa, "dl_truc_tuyen": dl_truc_tuyen, "nhan_luc_ai": nhan_luc_ai
+                    "ky_so": ky_so, "zalo_oa": zalo_oa, "dl_truc_tuyen": dl_truc_tuyen, "nhan_luc_ai": nhan_luc_ai,
+                    "file_base64": file_base64, "file_name": file_name, "file_mimeType": file_mimeType
                 }
                 
-                # Bắn dữ liệu qua Google Apps Script
-                WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRK8qCKzwM1cYe-HjPqm4QdAsxq8443Oax3KssvkHjVLo-__vSkXikohz_-v9ugGQm/exec"
+                # Link ống nước mới nhất của bạn đã được gắn vào đây:
+                WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwD7MM9lYZYfuF-Re7Xq1finPmGTrLNGwPCONjsCWqyIrn3k7a6oDBFsa0J_PjR_-Ew/exec"
                 
                 try:
                     response = requests.post(WEB_APP_URL, json=data)
                     if response.status_code == 200:
-                        st.success(f"✅ Báo cáo {ky_bao_cao} của {don_vi} đã được gửi thành công về Ban Tuyên giáo và Dân vận Tỉnh ủy!")
+                        st.success(f"✅ Báo cáo {ky_bao_cao} của {don_vi} (kèm File) đã được gửi thành công!")
                         st.balloons()
                     else:
                         st.error("❌ Có lỗi xảy ra ở máy chủ. Vui lòng thử lại.")
