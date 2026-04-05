@@ -104,7 +104,7 @@ else:
         file_minh_chung = st.file_uploader("Tải lên Báo cáo chi tiết (File Word/PDF có dấu đỏ):", type=["pdf", "docx"])
 
         st.write("---")
-        submitted = st.form_submit_button("🚀 GỬI BÁO CÁO", use_container_width=True)
+        submitted = st.form_submit_button("🚀 GỬI HOẶC CẬP NHẬT BÁO CÁO", use_container_width=True)
 
         if submitted:
             if don_vi == "Chọn đơn vị...":
@@ -135,7 +135,7 @@ else:
                     }
                     
                     # Link ống nước mới nhất
-                    WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwD7MM9lYZYfuF-Re7Xq1finPmGTrLNGwPCONjsCWqyIrn3k7a6oDBFsa0J_PjR_-Ew/exec"
+                    WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyebYTTM2LwI3EFG3SNg6HIoDf-rtNiY0ZJNJ69H3LcIDr86NBWeUXv_w00ElJ90xfa/exec"
                     
                     try:
                         response = requests.post(WEB_APP_URL, json=data)
