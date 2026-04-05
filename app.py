@@ -10,7 +10,7 @@ MAT_KHAU_CO_SO = "TGDV@2026"
 MAT_KHAU_LANH_DAO = "LanhDao@2026"
 
 # ---> LINK ỐNG NƯỚC <---
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxQOBBuxKawE43TPBlSrOOQNrNgOrtKgSmELItXlRN6_CCbd7cbyjEm1sFLBHTLWp4N/exec"
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRK8qCKzwM1cYe-HjPqm4QdAsxq8443Oax3KssvkHjVLo-__vSkXikohz_-v9ugGQm/exec"
 
 # --- CSS TÙY CHỈNH ---
 st.markdown("""
@@ -61,7 +61,6 @@ if menu == "📝 Nhập Báo Cáo (Cơ sở)":
         with st.form("form_bao_cao"):
             st.markdown('<div class="section-header">📍 PHẦN 1: THÔNG TIN CHUNG</div>', unsafe_allow_html=True)
             
-            # ĐÃ BỔ SUNG 18 TRUNG TÂM CHÍNH TRỊ LÊN ĐẦU DANH SÁCH
             danh_sach_don_vi = [
                 "Chọn đơn vị...", 
                 "Trung tâm Chính trị TP Tuyên Quang", "Trung tâm Chính trị TP Hà Giang", "Trung tâm Chính trị Sơn Dương", "Trung tâm Chính trị Yên Sơn", "Trung tâm Chính trị Hàm Yên", "Trung tâm Chính trị Chiêm Hóa", "Trung tâm Chính trị Na Hang", "Trung tâm Chính trị Lâm Bình", "Trung tâm Chính trị Đồng Văn", "Trung tâm Chính trị Mèo Vạc", "Trung tâm Chính trị Yên Minh", "Trung tâm Chính trị Quản Bạ", "Trung tâm Chính trị Vị Xuyên", "Trung tâm Chính trị Bắc Mê", "Trung tâm Chính trị Hoàng Su Phì", "Trung tâm Chính trị Xín Mần", "Trung tâm Chính trị Bắc Quang", "Trung tâm Chính trị Quang Bình",
@@ -175,4 +174,50 @@ elif menu == "📊 Bảng Điều Khiển (Lãnh đạo)":
             else: st.error("❌ Mật khẩu không hợp lệ!")
     else:
         if st.button("🚪 Đăng xuất Lãnh đạo"):
-            st.
+            st.session_state["dang_nhap_lanh_dao"] = False
+            st.rerun()
+
+        with st.spinner("Đang đồng bộ dữ liệu từ Tỉnh ủy..."):
+            try:
+                res = requests.get(WEB_APP_URL)
+                if res.status_code == 200:
+                    data_json = res.json()
+                    if len(data_json) > 0:
+                        df = pd.DataFrame(data_json)
+                        
+                        tong_don_vi_da_nop = len(df)
+                        tong_hoi_nghi = pd.to_numeric(df.iloc[:, 4], errors='coerce').sum() 
+                        tong_mo_hinh = pd.to_numeric(df.iloc[:, 7], errors='coerce').sum() 
+                        
+                        m1, m2, m3 = st.columns(3)
+                        with m1:
+                            st.markdown(f'<div class="metric-box"><div class="metric-label">🏢 Số Báo cáo đã nộp</div><div class="metric-value">{tong_don_vi_da_nop}</div></div>', unsafe_allow_html=True)
+                        with m2:
+                            st.markdown(f'<div class="metric-box"><div class="metric-label">🎤 Tổng số Hội nghị</div><div class="metric-value">{int(tong_hoi_nghi)}</div></div>', unsafe_allow_html=True)
+                        with m3:
+                            st.markdown(f'<div class="metric-box"><div class="metric-label">🤝 Mô hình Dân vận khéo</div><div class="metric-value">{int(tong_mo_hinh)}</div></div>', unsafe_allow_html=True)
+                        
+                        st.write("---")
+                        
+                        col_chart1, col_chart2 = st.columns(2)
+                        with col_chart1:
+                            st.markdown("#### 📊 Tỷ lệ Ký số văn bản theo từng đơn vị")
+                            df_ky_so = df.iloc[:, [1, 9]] 
+                            df_ky_so.columns = ["Đơn vị", "Tỷ lệ Ký số (%)"]
+                            df_ky_so["Tỷ lệ Ký số (%)"] = pd.to_numeric(df_ky_so["Tỷ lệ Ký số (%)"], errors='coerce')
+                            st.bar_chart(df_ky_so.set_index("Đơn vị"))
+
+                        with col_chart2:
+                            st.markdown("#### 📈 Số lượng Tin bài phản bác")
+                            df_tin_bai = df.iloc[:, [1, 6]] 
+                            df_tin_bai.columns = ["Đơn vị", "Số tin bài"]
+                            df_tin_bai["Số tin bài"] = pd.to_numeric(df_tin_bai["Số tin bài"], errors='coerce')
+                            st.line_chart(df_tin_bai.set_index("Đơn vị"))
+                        
+                        st.write("---")
+                        st.markdown("#### 📑 Danh sách Dữ liệu mới nhất")
+                        st.dataframe(df.iloc[:, [0, 1, 2, 3]]) 
+                    else:
+                        st.info("Chưa có dữ liệu báo cáo nào trong hệ thống.")
+            except Exception as e:
+                st.error(f"Không thể tải dữ liệu. Lỗi: {e}")
