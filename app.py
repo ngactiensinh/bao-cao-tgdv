@@ -12,11 +12,20 @@ MAT_KHAU_LANH_DAO = "LanhDao@2026"
 # ---> LINK ỐNG NƯỚC <---
 WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRK8qCKzwM1cYe-HjPqm4QdAsxq8443Oax3KssvkHjVLo-__vSkXikohz_-v9ugGQm/exec"
 
-# --- CSS TÙY CHỈNH ---
+# --- CSS TÙY CHỈNH (ĐÃ NÂNG CẤP TIÊU ĐỀ Ô VAN TRẮNG ĐỎ) ---
 st.markdown("""
 <style>
-    .main-title { font-size: 26px; font-weight: bold; color: #C8102E; text-align: center; text-transform: uppercase;}
-    .sub-title { font-size: 16px; font-weight: bold; color: #004B87; text-align: center; margin-bottom: 20px;}
+    .header-oval {
+        background-color: #ffffff;
+        border: 4px solid #C8102E;
+        border-radius: 60px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .main-title { font-size: 34px; font-weight: 900; color: #C8102E; text-transform: uppercase; margin: 0; line-height: 1.2;}
+    .sub-title { font-size: 20px; font-weight: bold; color: #004B87; margin-top: 5px;}
     .section-header { font-size: 18px; font-weight: bold; color: #ffffff; background-color: #004B87; padding: 10px; border-radius: 5px; margin-top: 20px; margin-bottom: 10px;}
     .metric-box { background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);}
     .metric-value { font-size: 30px; font-weight: bold; color: #C8102E; }
@@ -36,14 +45,13 @@ st.sidebar.write("---")
 if menu == "📝 Nhập Báo Cáo (Cơ sở)":
     if "dang_nhap_co_so" not in st.session_state: st.session_state["dang_nhap_co_so"] = False
 
-    col1, col2 = st.columns([1, 6])
-    with col1:
-        try: st.image("Logo TGDV.png", width=80)
-        except: st.write("🌟")
-    with col2:
-        st.markdown('<div class="main-title">HỆ THỐNG THU THẬP BÁO CÁO</div>', unsafe_allow_html=True)
-        st.markdown('<div class="sub-title">BAN TUYÊN GIÁO VÀ DÂN VẬN TỈNH ỦY TUYÊN QUANG</div>', unsafe_allow_html=True)
-    st.write("---")
+    # --- TIÊU ĐỀ MỚI ---
+    st.markdown("""
+    <div class="header-oval">
+        <div class="main-title">HỆ THỐNG THU THẬP BÁO CÁO</div>
+        <div class="sub-title">BAN TUYÊN GIÁO VÀ DÂN VẬN TỈNH ỦY TUYÊN QUANG</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     if not st.session_state["dang_nhap_co_so"]:
         st.markdown('<div class="section-header" style="text-align:center;">🔒 ĐĂNG NHẬP CƠ SỞ</div>', unsafe_allow_html=True)
@@ -61,19 +69,15 @@ if menu == "📝 Nhập Báo Cáo (Cơ sở)":
         with st.form("form_bao_cao"):
             st.markdown('<div class="section-header">📍 PHẦN 1: THÔNG TIN CHUNG</div>', unsafe_allow_html=True)
             
-            # --- DANH SÁCH ĐƠN VỊ ĐÃ BỔ SUNG 04 ĐẢNG ỦY ---
             danh_sach_don_vi = [
                 "Chọn đơn vị...", 
-                # 04 Đảng ủy cấp tỉnh
                 "Đảng ủy Công an tỉnh", "Đảng ủy Quân sự tỉnh", "Đảng ủy các cơ quan Đảng tỉnh", "Đảng ủy Ủy ban nhân dân tỉnh",
-                # 18 Trung tâm chính trị
                 "Trung tâm chính trị xã Đồng Văn", "Trung tâm chính trị xã Mèo Vạc", "Trung tâm chính trị xã Yên Minh", 
                 "Trung tâm chính trị xã Quản Bạ", "Trung tâm chính trị xã Hoàng Su Phì", "Trung tâm chính trị xã Pà Vầy Sủ", 
                 "Trung tâm chính trị xã Bắc Mê", "Trung tâm chính trị xã Vị Xuyên", "Trung tâm chính trị xã Bắc Quang", 
                 "Trung tâm chính trị xã Quang Bình", "Trung tâm chính trị phường Hà Giang 2", "Trung tâm chính trị xã Lâm Bình", 
                 "Trung tâm chính trị xã Nà Hang", "Trung tâm chính trị xã Chiêm Hóa", "Trung tâm chính trị xã Hàm Yên", 
                 "Trung tâm chính trị xã Yên Sơn", "Trung tâm chính trị xã An Tường", "Trung tâm chính trị xã Sơn Dương",
-                # Các xã, phường
                 "Phường Mỹ Lâm", "Phường Minh Xuân", "Phường Nông Tiến", "Phường An Tường", "Phường Bình Thuận", "Phường Hà Giang 1", "Phường Hà Giang 2",
                 "Xã Thượng Lâm", "Xã Lâm Bình", "Xã Minh Quang", "Xã Bình An", "Xã Côn Lôn", "Xã Yên Hoa", "Xã Thượng Nông", "Xã Hồng Thái", "Xã Nà Hang", "Xã Tân Mỹ", "Xã Yên Lập", "Xã Tân An", "Xã Chiêm Hóa", "Xã Hòa An", "Xã Kiên Đài", "Xã Tri Phú", "Xã Kim Bình", "Xã Yên Nguyên", "Xã Yên Phú", "Xã Bạch Xa", "Xã Phù Lưu", "Xã Hàm Yên", "Xã Bình Xa", "Xã Thái Sơn", "Xã Thái Hòa", "Xã Hùng Lợi", "Xã Trung Sơn", "Xã Thái Bình", "Xã Tân Long", "Xã Xuân Vân", "Xã Lực Hành", "Xã Yên Sơn", "Xã Nhữ Khê", "Xã Tân Trào", "Xã Minh Thanh", "Xã Sơn Dương", "Xã Bình Ca", "Xã Tân Thanh", "Xã Sơn Thủy", "Xã Phú Lương", "Xã Trường Sinh", "Xã Hồng Sơn", "Xã Đông Thọ", "Xã Lũng Cú", "Xã Đồng Văn", "Xã Sà Phìn", "Xã Phố Bảng", "Xã Lũng Phìn", "Xã Sủng Máng", "Xã Sơn Vĩ", "Xã Mèo Vạc", "Xã Khâu Vai", "Xã Niêm Sơn", "Xã Tát Ngà", "Xã Thắng Mố", "Xã Bạch Đích", "Xã Yên Minh", "Xã Mậu Duệ", "Xã Du Già", "Xã Đường Thượng", "Xã Lùng Tám", "Xã Cán Tỷ", "Xã Nghĩa Thuận", "Xã Quản Bạ", "Xã Tùng Vài", "Xã Yên Cường", "Xã Đường Hồng", "Xã Bắc Mê", "Xã Minh Ngọc", "Xã Ngọc Đường", "Xã Lao Chải", "Xã Thanh Thủy", "Xã Phú Linh", "Xã Linh Hồ", "Xã Bạch Ngọc", "Xã Vị Xuyên", "Xã Việt Lâm", "Xã Tân Quang", "Xã Đồng Tâm", "Xã Liên Hiệp", "Xã Bằng Hành", "Xã Bắc Quang", "Xã Hùng An", "Xã Vĩnh Tuy", "Xã Đồng Yên", "Xã Tiên Yên", "Xã Xuân Giang", "Xã Bằng Lang", "Xã Yên Thành", "Xã Quang Bình", "Xã Tân Trịnh", "Xã Thông Nguyên", "Xã Hồ Thầu", "Xã Nậm Dịch", "Xã Tân Tiến", "Xã Hoàng Su Phì", "Xã Thàng Tín", "Xã Bản Máy", "Xã Pờ Ly Ngài", "Xã Xín Mần", "Xã Pà Vầy Sủ", "Xã Nấm Dẩn", "Xã Trung Thịnh", "Xã Khuôn Lùng", "Xã Trung Hà", "Xã Kiến Thiết", "Xã Hùng Đức", "Xã Minh Sơn", "Xã Minh Tân", "Xã Thuận Hòa", "Xã Tùng Bá", "Xã Thượng Sơn", "Xã Cao Bồ", "Xã Ngọc Long", "Xã Giáp Trung", "Xã Tiên Nguyên", "Xã Quảng Nguyên"
             ]
@@ -171,9 +175,13 @@ if menu == "📝 Nhập Báo Cáo (Cơ sở)":
 elif menu == "📊 Bảng Điều Khiển (Lãnh đạo)":
     if "dang_nhap_lanh_dao" not in st.session_state: st.session_state["dang_nhap_lanh_dao"] = False
 
-    st.markdown('<div class="main-title">BẢNG ĐIỀU KHIỂN CHIẾN LƯỢC</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">CÔNG TÁC TUYÊN GIÁO VÀ DÂN VẬN TỈNH ỦY</div>', unsafe_allow_html=True)
-    st.write("---")
+    # --- TIÊU ĐỀ MỚI ---
+    st.markdown("""
+    <div class="header-oval">
+        <div class="main-title">BẢNG ĐIỀU KHIỂN CHIẾN LƯỢC</div>
+        <div class="sub-title">BAN TUYÊN GIÁO VÀ DÂN VẬN TỈNH ỦY TUYÊN QUANG</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     if not st.session_state["dang_nhap_lanh_dao"]:
         mk_lanh_dao = st.text_input("Nhập mật khẩu Lãnh đạo:", type="password")
