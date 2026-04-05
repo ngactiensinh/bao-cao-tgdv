@@ -61,9 +61,19 @@ if menu == "📝 Nhập Báo Cáo (Cơ sở)":
         with st.form("form_bao_cao"):
             st.markdown('<div class="section-header">📍 PHẦN 1: THÔNG TIN CHUNG</div>', unsafe_allow_html=True)
             
+            # --- DANH SÁCH ĐƠN VỊ ĐÃ BỔ SUNG 04 ĐẢNG ỦY ---
             danh_sach_don_vi = [
                 "Chọn đơn vị...", 
-                "Trung tâm Chính trị TP Tuyên Quang", "Trung tâm Chính trị TP Hà Giang", "Trung tâm Chính trị Sơn Dương", "Trung tâm Chính trị Yên Sơn", "Trung tâm Chính trị Hàm Yên", "Trung tâm Chính trị Chiêm Hóa", "Trung tâm Chính trị Na Hang", "Trung tâm Chính trị Lâm Bình", "Trung tâm Chính trị Đồng Văn", "Trung tâm Chính trị Mèo Vạc", "Trung tâm Chính trị Yên Minh", "Trung tâm Chính trị Quản Bạ", "Trung tâm Chính trị Vị Xuyên", "Trung tâm Chính trị Bắc Mê", "Trung tâm Chính trị Hoàng Su Phì", "Trung tâm Chính trị Xín Mần", "Trung tâm Chính trị Bắc Quang", "Trung tâm Chính trị Quang Bình",
+                # 04 Đảng ủy cấp tỉnh
+                "Đảng ủy Công an tỉnh", "Đảng ủy Quân sự tỉnh", "Đảng ủy các cơ quan Đảng tỉnh", "Đảng ủy Ủy ban nhân dân tỉnh",
+                # 18 Trung tâm chính trị
+                "Trung tâm chính trị xã Đồng Văn", "Trung tâm chính trị xã Mèo Vạc", "Trung tâm chính trị xã Yên Minh", 
+                "Trung tâm chính trị xã Quản Bạ", "Trung tâm chính trị xã Hoàng Su Phì", "Trung tâm chính trị xã Pà Vầy Sủ", 
+                "Trung tâm chính trị xã Bắc Mê", "Trung tâm chính trị xã Vị Xuyên", "Trung tâm chính trị xã Bắc Quang", 
+                "Trung tâm chính trị xã Quang Bình", "Trung tâm chính trị phường Hà Giang 2", "Trung tâm chính trị xã Lâm Bình", 
+                "Trung tâm chính trị xã Nà Hang", "Trung tâm chính trị xã Chiêm Hóa", "Trung tâm chính trị xã Hàm Yên", 
+                "Trung tâm chính trị xã Yên Sơn", "Trung tâm chính trị xã An Tường", "Trung tâm chính trị xã Sơn Dương",
+                # Các xã, phường
                 "Phường Mỹ Lâm", "Phường Minh Xuân", "Phường Nông Tiến", "Phường An Tường", "Phường Bình Thuận", "Phường Hà Giang 1", "Phường Hà Giang 2",
                 "Xã Thượng Lâm", "Xã Lâm Bình", "Xã Minh Quang", "Xã Bình An", "Xã Côn Lôn", "Xã Yên Hoa", "Xã Thượng Nông", "Xã Hồng Thái", "Xã Nà Hang", "Xã Tân Mỹ", "Xã Yên Lập", "Xã Tân An", "Xã Chiêm Hóa", "Xã Hòa An", "Xã Kiên Đài", "Xã Tri Phú", "Xã Kim Bình", "Xã Yên Nguyên", "Xã Yên Phú", "Xã Bạch Xa", "Xã Phù Lưu", "Xã Hàm Yên", "Xã Bình Xa", "Xã Thái Sơn", "Xã Thái Hòa", "Xã Hùng Lợi", "Xã Trung Sơn", "Xã Thái Bình", "Xã Tân Long", "Xã Xuân Vân", "Xã Lực Hành", "Xã Yên Sơn", "Xã Nhữ Khê", "Xã Tân Trào", "Xã Minh Thanh", "Xã Sơn Dương", "Xã Bình Ca", "Xã Tân Thanh", "Xã Sơn Thủy", "Xã Phú Lương", "Xã Trường Sinh", "Xã Hồng Sơn", "Xã Đông Thọ", "Xã Lũng Cú", "Xã Đồng Văn", "Xã Sà Phìn", "Xã Phố Bảng", "Xã Lũng Phìn", "Xã Sủng Máng", "Xã Sơn Vĩ", "Xã Mèo Vạc", "Xã Khâu Vai", "Xã Niêm Sơn", "Xã Tát Ngà", "Xã Thắng Mố", "Xã Bạch Đích", "Xã Yên Minh", "Xã Mậu Duệ", "Xã Du Già", "Xã Đường Thượng", "Xã Lùng Tám", "Xã Cán Tỷ", "Xã Nghĩa Thuận", "Xã Quản Bạ", "Xã Tùng Vài", "Xã Yên Cường", "Xã Đường Hồng", "Xã Bắc Mê", "Xã Minh Ngọc", "Xã Ngọc Đường", "Xã Lao Chải", "Xã Thanh Thủy", "Xã Phú Linh", "Xã Linh Hồ", "Xã Bạch Ngọc", "Xã Vị Xuyên", "Xã Việt Lâm", "Xã Tân Quang", "Xã Đồng Tâm", "Xã Liên Hiệp", "Xã Bằng Hành", "Xã Bắc Quang", "Xã Hùng An", "Xã Vĩnh Tuy", "Xã Đồng Yên", "Xã Tiên Yên", "Xã Xuân Giang", "Xã Bằng Lang", "Xã Yên Thành", "Xã Quang Bình", "Xã Tân Trịnh", "Xã Thông Nguyên", "Xã Hồ Thầu", "Xã Nậm Dịch", "Xã Tân Tiến", "Xã Hoàng Su Phì", "Xã Thàng Tín", "Xã Bản Máy", "Xã Pờ Ly Ngài", "Xã Xín Mần", "Xã Pà Vầy Sủ", "Xã Nấm Dẩn", "Xã Trung Thịnh", "Xã Khuôn Lùng", "Xã Trung Hà", "Xã Kiến Thiết", "Xã Hùng Đức", "Xã Minh Sơn", "Xã Minh Tân", "Xã Thuận Hòa", "Xã Tùng Bá", "Xã Thượng Sơn", "Xã Cao Bồ", "Xã Ngọc Long", "Xã Giáp Trung", "Xã Tiên Nguyên", "Xã Quảng Nguyên"
             ]
