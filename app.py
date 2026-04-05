@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import base64
 import pandas as pd
+import os
 
 st.set_page_config(page_title="Báo cáo TGDV - Tuyên Quang", page_icon="🌟", layout="wide")
 
@@ -12,26 +13,53 @@ MAT_KHAU_LANH_DAO = "LanhDao@2026"
 # ---> LINK ỐNG NƯỚC <---
 WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRK8qCKzwM1cYe-HjPqm4QdAsxq8443Oax3KssvkHjVLo-__vSkXikohz_-v9ugGQm/exec"
 
-# --- CSS TÙY CHỈNH (ĐÃ NÂNG CẤP TIÊU ĐỀ Ô VAN TRẮNG ĐỎ) ---
+# --- CSS TÙY CHỈNH ---
 st.markdown("""
 <style>
     .header-oval {
         background-color: #ffffff;
         border: 4px solid #C8102E;
         border-radius: 60px;
-        padding: 20px;
+        padding: 15px 30px;
         margin-bottom: 30px;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 25px;
+        flex-wrap: wrap;
     }
-    .main-title { font-size: 34px; font-weight: 900; color: #C8102E; text-transform: uppercase; margin: 0; line-height: 1.2;}
-    .sub-title { font-size: 20px; font-weight: bold; color: #004B87; margin-top: 5px;}
+    .main-title { font-size: 32px; font-weight: 900; color: #C8102E; text-transform: uppercase; margin: 0; line-height: 1.2; text-align: center;}
+    .sub-title { font-size: 18px; font-weight: bold; color: #004B87; margin-top: 5px; text-align: center;}
     .section-header { font-size: 18px; font-weight: bold; color: #ffffff; background-color: #004B87; padding: 10px; border-radius: 5px; margin-top: 20px; margin-bottom: 10px;}
     .metric-box { background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);}
     .metric-value { font-size: 30px; font-weight: bold; color: #C8102E; }
     .metric-label { font-size: 16px; font-weight: bold; color: #004B87; }
 </style>
 """, unsafe_allow_html=True)
+
+# --- HÀM TẠO TIÊU ĐỀ CÓ LOGO TRONG KHUNG Ô VAN ---
+def hien_thi_tieu_de(tieu_de_chinh):
+    # Đọc file ảnh logo từ kho (nếu có)
+    logo_html = ""
+    try:
+        with open("Logo TGDV.png", "rb") as f:
+            data = base64.b64encode(f.read()).decode("utf-8")
+            logo_html = f'<img src="data:image/png;base64,{data}" style="height: 85px;">'
+    except:
+        # Nếu không tìm thấy file Logo TGDV.png, dùng tạm ảnh Quốc huy
+        logo_html = '<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Qu%E1%BB%91c_huy_Vi%E1%BB%87t_Nam.svg/250px-Qu%E1%BB%91c_huy_Vi%E1%BB%87t_Nam.svg.png" style="height: 85px;">'
+    
+    # In ra khung HTML
+    st.markdown(f"""
+    <div class="header-oval">
+        <div>{logo_html}</div>
+        <div>
+            <div class="main-title">{tieu_de_chinh}</div>
+            <div class="sub-title">BAN TUYÊN GIÁO VÀ DÂN VẬN TỈNH ỦY TUYÊN QUANG</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- MENU ĐIỀU HƯỚNG ---
 st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Qu%E1%BB%91c_huy_Vi%E1%BB%87t_Nam.svg/250px-Qu%E1%BB%91c_huy_Vi%E1%BB%87t_Nam.svg.png", width=100)
@@ -45,13 +73,8 @@ st.sidebar.write("---")
 if menu == "📝 Nhập Báo Cáo (Cơ sở)":
     if "dang_nhap_co_so" not in st.session_state: st.session_state["dang_nhap_co_so"] = False
 
-    # --- TIÊU ĐỀ MỚI ---
-    st.markdown("""
-    <div class="header-oval">
-        <div class="main-title">HỆ THỐNG THU THẬP BÁO CÁO</div>
-        <div class="sub-title">BAN TUYÊN GIÁO VÀ DÂN VẬN TỈNH ỦY TUYÊN QUANG</div>
-    </div>
-    """, unsafe_allow_html=True)
+    # GỌI HÀM HIỂN THỊ TIÊU ĐỀ
+    hien_thi_tieu_de("HỆ THỐNG THU THẬP BÁO CÁO")
 
     if not st.session_state["dang_nhap_co_so"]:
         st.markdown('<div class="section-header" style="text-align:center;">🔒 ĐĂNG NHẬP CƠ SỞ</div>', unsafe_allow_html=True)
@@ -175,13 +198,8 @@ if menu == "📝 Nhập Báo Cáo (Cơ sở)":
 elif menu == "📊 Bảng Điều Khiển (Lãnh đạo)":
     if "dang_nhap_lanh_dao" not in st.session_state: st.session_state["dang_nhap_lanh_dao"] = False
 
-    # --- TIÊU ĐỀ MỚI ---
-    st.markdown("""
-    <div class="header-oval">
-        <div class="main-title">BẢNG ĐIỀU KHIỂN CHIẾN LƯỢC</div>
-        <div class="sub-title">BAN TUYÊN GIÁO VÀ DÂN VẬN TỈNH ỦY TUYÊN QUANG</div>
-    </div>
-    """, unsafe_allow_html=True)
+    # GỌI HÀM HIỂN THỊ TIÊU ĐỀ
+    hien_thi_tieu_de("BẢNG ĐIỀU KHIỂN CHIẾN LƯỢC")
 
     if not st.session_state["dang_nhap_lanh_dao"]:
         mk_lanh_dao = st.text_input("Nhập mật khẩu Lãnh đạo:", type="password")
