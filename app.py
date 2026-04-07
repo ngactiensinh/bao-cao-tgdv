@@ -11,7 +11,7 @@ MAT_KHAU_CO_SO = "TGDV@2026"
 MAT_KHAU_LANH_DAO = "Tgdv@2026"
 
 # ---> LINK ỐNG NƯỚC <---
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRK8qCKzwM1cYe-HjPqm4QdAsxq8443Oax3KssvkHjVLo-__vSkXikohz_-v9ugGQm/exec"
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzZcw65VVkuZsVMR75JPGmXY4CRaDR1WwdEBk3eCxjxhILujRZeLMVcdMfDB6IDiUw4/exec"
 
 # --- CSS TÙY CHỈNH ---
 st.markdown("""
