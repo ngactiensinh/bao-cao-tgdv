@@ -11,7 +11,7 @@ MAT_KHAU_CO_SO = "TGDV@2026"
 MAT_KHAU_LANH_DAO = "Tgdv@2026"
 
 # ---> LINK ỐNG NƯỚC <---
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzZcw65VVkuZsVMR75JPGmXY4CRaDR1WwdEBk3eCxjxhILujRZeLMVcdMfDB6IDiUw4/exec"
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzFoaz9RpTZUphvARvI3RkXlZNkGQgyyZp0m49iH4ZH39x9j86HNrzSZgPKdHVj4nhz/exec"
 
 # --- CSS TÙY CHỈNH ---
 st.markdown("""
@@ -188,7 +188,7 @@ if menu == "📝 Nhập Báo Cáo (Cơ sở)":
                         except Exception as e: st.error(f"❌ Lỗi mạng: {e}")
 
 # ==========================================================
-# 2. TRANG BẢNG ĐIỀU KHIỂN (DÀNH CHO LÃNH ĐẠO) - ĐÃ NÂNG CẤP VIP
+# 2. TRANG BẢNG ĐIỀU KHIỂN (DÀNH CHO LÃNH ĐẠO) - ĐÃ TÍCH HỢP BỘ LỌC THỜI GIAN
 # ==========================================================
 elif menu == "📊 Bảng Điều Khiển (Lãnh đạo)":
     if "dang_nhap_lanh_dao" not in st.session_state: st.session_state["dang_nhap_lanh_dao"] = False
@@ -212,76 +212,108 @@ elif menu == "📊 Bảng Điều Khiển (Lãnh đạo)":
                 if res.status_code == 200:
                     data_json = res.json()
                     if len(data_json) > 0:
-                        df = pd.DataFrame(data_json)
+                        df_goc = pd.DataFrame(data_json)
                         
-                        # --- XỬ LÝ SỐ LIỆU ĐỂ TÍNH TOÁN ---
-                        # Chuyển các cột cần thiết sang dạng số
-                        for col in [4, 5, 6, 7, 8, 9, 18, 20, 22, 24, 26, 28]:
-                            df.iloc[:, col] = pd.to_numeric(df.iloc[:, col], errors='coerce').fillna(0)
-                        
-                        # Tính tổng các chỉ số
-                        tong_don_vi = len(df)
-                        tong_hoi_nghi = df.iloc[:, 4].sum()
-                        tong_mo_hinh = df.iloc[:, 7].sum()
-                        tong_vu_viec = df.iloc[:, 8].sum()
-                        tb_dang_vien = df.iloc[:, 5].mean()
-                        tong_hv = df.iloc[:, [18, 20, 22, 24, 26, 28]].sum().sum()
-                        
-                        # --- HÀNG METRICS 1 ---
-                        m1, m2, m3 = st.columns(3)
-                        with m1: st.markdown(f'<div class="metric-box"><div class="metric-label">🏢 Số Báo cáo đã nộp</div><div class="metric-value">{tong_don_vi}</div></div>', unsafe_allow_html=True)
-                        with m2: st.markdown(f'<div class="metric-box"><div class="metric-label">🎤 Tổng số Hội nghị</div><div class="metric-value">{int(tong_hoi_nghi)}</div></div>', unsafe_allow_html=True)
-                        with m3: st.markdown(f'<div class="metric-box"><div class="metric-label">🤝 Mô hình Dân vận khéo</div><div class="metric-value">{int(tong_mo_hinh)}</div></div>', unsafe_allow_html=True)
-                        
-                        # --- HÀNG METRICS 2 (MỚI THÊM) ---
-                        m4, m5, m6 = st.columns(3)
-                        with m4: st.markdown(f'<div class="metric-box"><div class="metric-label">⚖️ Vụ việc đã giải quyết</div><div class="metric-value">{int(tong_vu_viec)}</div></div>', unsafe_allow_html=True)
-                        with m5: st.markdown(f'<div class="metric-box"><div class="metric-label">📈 TB Đảng viên học tập</div><div class="metric-value">{tb_dang_vien:.1f}%</div></div>', unsafe_allow_html=True)
-                        with m6: st.markdown(f'<div class="metric-box"><div class="metric-label">🎓 Tổng số Học viên ĐT-BD</div><div class="metric-value">{int(tong_hv)}</div></div>', unsafe_allow_html=True)
+                        # --- BỘ LỌC THỜI GIAN THÔNG MINH ---
+                        st.markdown("### 🗓️ LỌC DỮ LIỆU THEO KỲ BÁO CÁO")
+                        loc_col, _ = st.columns([1, 2])
+                        with loc_col:
+                            ky_loc = st.selectbox("Chọn kỳ muốn xem:", [
+                                "Tất cả (Từ trước đến nay)",
+                                "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+                                "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+                                "Quý I", "Quý II", "Quý III", "Quý IV",
+                                "6 tháng đầu năm", "6 tháng cuối năm", "9 tháng đầu năm", "Cả năm (Tháng 1 - 12)"
+                            ])
+
+                        # Xử lý logic lọc dữ liệu
+                        if ky_loc != "Tất cả (Từ trước đến nay)":
+                            if ky_loc == "Quý I": thang_list = ["Tháng 1", "Tháng 2", "Tháng 3"]
+                            elif ky_loc == "Quý II": thang_list = ["Tháng 4", "Tháng 5", "Tháng 6"]
+                            elif ky_loc == "Quý III": thang_list = ["Tháng 7", "Tháng 8", "Tháng 9"]
+                            elif ky_loc == "Quý IV": thang_list = ["Tháng 10", "Tháng 11", "Tháng 12"]
+                            elif ky_loc == "6 tháng đầu năm": thang_list = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"]
+                            elif ky_loc == "6 tháng cuối năm": thang_list = ["Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"]
+                            elif ky_loc == "9 tháng đầu năm": thang_list = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9"]
+                            elif ky_loc == "Cả năm (Tháng 1 - 12)": thang_list = [f"Tháng {i}" for i in range(1, 13)]
+                            else: thang_list = [ky_loc] # Chọn 1 tháng cụ thể
+                            
+                            # Lọc dataframe chỉ giữ lại những dòng có kỳ báo cáo khớp với danh sách
+                            df = df_goc[df_goc.iloc[:, 2].isin(thang_list)]
+                        else:
+                            df = df_goc
                         
                         st.write("---")
-                        
-                        # --- HÀNG BIỂU ĐỒ 1 ---
-                        col_chart1, col_chart2 = st.columns(2)
-                        with col_chart1:
-                            st.markdown("#### 📊 Tỷ lệ Ký số văn bản (%)")
-                            df_ky_so = df.iloc[:, [1, 9]] 
-                            df_ky_so.columns = ["Đơn vị", "Tỷ lệ Ký số (%)"]
-                            st.bar_chart(df_ky_so.set_index("Đơn vị"))
+
+                        # Nếu sau khi lọc mà không có dữ liệu nào thì báo lỗi nhẹ nhàng
+                        if len(df) == 0:
+                            st.warning(f"Chưa có đơn vị nào nộp báo cáo cho kỳ: **{ky_loc}**.")
+                        else:
+                            # --- XỬ LÝ SỐ LIỆU ĐỂ TÍNH TOÁN ---
+                            for col in [4, 5, 6, 7, 8, 9, 18, 20, 22, 24, 26, 28]:
+                                df.iloc[:, col] = pd.to_numeric(df.iloc[:, col], errors='coerce').fillna(0)
                             
-                        with col_chart2:
-                            st.markdown("#### 📈 Số lượng Tin bài phản bác")
-                            df_tin_bai = df.iloc[:, [1, 6]] 
-                            df_tin_bai.columns = ["Đơn vị", "Số tin bài"]
-                            st.line_chart(df_tin_bai.set_index("Đơn vị"))
+                            # Tính tổng các chỉ số
+                            tong_don_vi = len(df)
+                            tong_hoi_nghi = df.iloc[:, 4].sum()
+                            tong_mo_hinh = df.iloc[:, 7].sum()
+                            tong_vu_viec = df.iloc[:, 8].sum()
+                            tb_dang_vien = df.iloc[:, 5].mean()
+                            tong_hv = df.iloc[:, [18, 20, 22, 24, 26, 28]].sum().sum()
                             
-                        st.write("---")
-                        
-                        # --- HÀNG BIỂU ĐỒ 2 (MỚI THÊM) ---
-                        col_chart3, col_chart4 = st.columns(2)
-                        with col_chart3:
-                            st.markdown("#### 📱 Tiến độ Kế hoạch CĐS (Zalo OA)")
-                            # Đếm số lượng các trạng thái Zalo OA
-                            df_zalo = df.iloc[:, 10].value_counts()
-                            st.bar_chart(df_zalo)
+                            # --- HÀNG METRICS 1 ---
+                            m1, m2, m3 = st.columns(3)
+                            with m1: st.markdown(f'<div class="metric-box"><div class="metric-label">🏢 Số Báo cáo đã nộp</div><div class="metric-value">{tong_don_vi}</div></div>', unsafe_allow_html=True)
+                            with m2: st.markdown(f'<div class="metric-box"><div class="metric-label">🎤 Tổng số Hội nghị</div><div class="metric-value">{int(tong_hoi_nghi)}</div></div>', unsafe_allow_html=True)
+                            with m3: st.markdown(f'<div class="metric-box"><div class="metric-label">🤝 Mô hình Dân vận khéo</div><div class="metric-value">{int(tong_mo_hinh)}</div></div>', unsafe_allow_html=True)
                             
-                        with col_chart4:
-                            st.markdown("#### 🎓 Cơ cấu Học viên Đào tạo, Bồi dưỡng")
-                            # Trích xuất dữ liệu học viên (Phụ lục 2)
-                            hv_data = {
-                                "Sơ cấp LLCT": df.iloc[:, 18].sum(),
-                                "Đảng viên mới": df.iloc[:, 20].sum(),
-                                "Nhận thức Đảng": df.iloc[:, 22].sum(),
-                                "Cấp ủy, Bí thư": df.iloc[:, 24].sum(),
-                                "MTTQ & CT-XH": df.iloc[:, 26].sum(),
-                                "Khác": df.iloc[:, 28].sum(),
-                            }
-                            df_hv = pd.DataFrame(list(hv_data.values()), index=list(hv_data.keys()), columns=["Số lượng"])
-                            st.bar_chart(df_hv)
-                        
-                        st.write("---")
-                        st.markdown("#### 📑 Danh sách Dữ liệu mới nhất")
-                        st.dataframe(df.iloc[:, [0, 1, 2, 3]]) 
+                            # --- HÀNG METRICS 2 ---
+                            m4, m5, m6 = st.columns(3)
+                            with m4: st.markdown(f'<div class="metric-box"><div class="metric-label">⚖️ Vụ việc đã giải quyết</div><div class="metric-value">{int(tong_vu_viec)}</div></div>', unsafe_allow_html=True)
+                            with m5: st.markdown(f'<div class="metric-box"><div class="metric-label">📈 TB Đảng viên học tập</div><div class="metric-value">{tb_dang_vien:.1f}%</div></div>', unsafe_allow_html=True)
+                            with m6: st.markdown(f'<div class="metric-box"><div class="metric-label">🎓 Tổng số Học viên ĐT-BD</div><div class="metric-value">{int(tong_hv)}</div></div>', unsafe_allow_html=True)
+                            
+                            st.write("---")
+                            
+                            # --- HÀNG BIỂU ĐỒ 1 ---
+                            col_chart1, col_chart2 = st.columns(2)
+                            with col_chart1:
+                                st.markdown("#### 📊 Tỷ lệ Ký số văn bản (%)")
+                                df_ky_so = df.iloc[:, [1, 9]] 
+                                df_ky_so.columns = ["Đơn vị", "Tỷ lệ Ký số (%)"]
+                                st.bar_chart(df_ky_so.set_index("Đơn vị"))
+                                
+                            with col_chart2:
+                                st.markdown("#### 📈 Số lượng Tin bài phản bác")
+                                df_tin_bai = df.iloc[:, [1, 6]] 
+                                df_tin_bai.columns = ["Đơn vị", "Số tin bài"]
+                                st.line_chart(df_tin_bai.set_index("Đơn vị"))
+                                
+                            st.write("---")
+                            
+                            # --- HÀNG BIỂU ĐỒ 2 ---
+                            col_chart3, col_chart4 = st.columns(2)
+                            with col_chart3:
+                                st.markdown("#### 📱 Tiến độ Kế hoạch CĐS (Zalo OA)")
+                                df_zalo = df.iloc[:, 10].value_counts()
+                                st.bar_chart(df_zalo)
+                                
+                            with col_chart4:
+                                st.markdown("#### 🎓 Cơ cấu Học viên Đào tạo, Bồi dưỡng")
+                                hv_data = {
+                                    "Sơ cấp LLCT": df.iloc[:, 18].sum(),
+                                    "Đảng viên mới": df.iloc[:, 20].sum(),
+                                    "Nhận thức Đảng": df.iloc[:, 22].sum(),
+                                    "Cấp ủy, Bí thư": df.iloc[:, 24].sum(),
+                                    "MTTQ & CT-XH": df.iloc[:, 26].sum(),
+                                    "Khác": df.iloc[:, 28].sum(),
+                                }
+                                df_hv = pd.DataFrame(list(hv_data.values()), index=list(hv_data.keys()), columns=["Số lượng"])
+                                st.bar_chart(df_hv)
+                            
+                            st.write("---")
+                            st.markdown("#### 📑 Danh sách Dữ liệu chi tiết")
+                            st.dataframe(df.iloc[:, [0, 1, 2, 3]]) 
                     else:
                         st.info("Chưa có dữ liệu báo cáo nào trong hệ thống.")
             except Exception as e:
