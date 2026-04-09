@@ -8,7 +8,7 @@ st.set_page_config(page_title="Báo cáo TGDV - Tuyên Quang", page_icon="🌟",
 
 # --- MẬT KHẨU ---
 MAT_KHAU_CO_SO = "TGDV@2026"
-MAT_KHAU_LANH_DAO = "Admin#2026"
+MAT_KHAU_LANH_DAO = "Tgdv@2026"
 
 # ---> LINK ỐNG NƯỚC <---
 WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzFoaz9RpTZUphvARvI3RkXlZNkGQgyyZp0m49iH4ZH39x9j86HNrzSZgPKdHVj4nhz/exec"
