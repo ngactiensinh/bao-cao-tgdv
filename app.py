@@ -7,7 +7,7 @@ from supabase import create_client, Client
 st.set_page_config(page_title="Báo cáo TGDV - Tuyên Quang", page_icon="🌟", layout="wide")
 
 # ==========================================
-# CẤU HÌNH SUPABASE (Thay thế Google Sheet)
+# CẤU HÌNH SUPABASE
 # ==========================================
 SUPABASE_URL = "https://qqzsdxhqrdfvxnlurnyb.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxenNkeGhxcmRmdnhubHVybnliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MjY0NjAsImV4cCI6MjA5MTIwMjQ2MH0.H62F5zYEZ5l47fS4IdAE2JdRdI7inXQqWG0nvXhn2P8"
@@ -72,11 +72,13 @@ st.sidebar.markdown("### HỆ THỐNG BÁO CÁO TGDV")
 menu = st.sidebar.radio("📌 Lựa chọn chức năng:", ["📝 Nhập Báo Cáo (Cơ sở)", "📊 Bảng Điều Khiển (Lãnh đạo)"])
 st.sidebar.write("---")
 
+# ĐÃ LỌC SẠCH TRUNG TÂM CHÍNH TRỊ - CHỈ CÒN 124 XÃ/PHƯỜNG VÀ 4 ĐẢNG ỦY
 DANH_SACH_DON_VI = [
-    "Chọn đơn vị...", 
+    "Chọn đơn vị...",
     "Đảng ủy Công an tỉnh", "Đảng ủy Quân sự tỉnh", "Đảng ủy các cơ quan Đảng tỉnh", "Đảng ủy Ủy ban nhân dân tỉnh",
     "Phường Mỹ Lâm", "Phường Minh Xuân", "Phường Nông Tiến", "Phường An Tường", "Phường Bình Thuận", "Phường Hà Giang 1", "Phường Hà Giang 2",
-    "Xã Thượng Lâm", "Xã Lâm Bình", "Xã Minh Quang", "Xã Bình An", "Xã Côn Lôn", "Xã Yên Hoa", "Xã Thượng Nông", "Xã Hồng Thái", "Xã Nà Hang", "Xã Tân Mỹ", "Xã Yên Lập", "Xã Tân An", "Xã Chiêm Hóa", "Xã Hòa An", "Xã Kiên Đài", "Xã Tri Phú", "Xã Kim Bình", "Xã Yên Nguyên", "Xã Yên Phú", "Xã Bạch Xa", "Xã Phù Lưu", "Xã Hàm Yên", "Xã Bình Xa", "Xã Thái Sơn", "Xã Thái Hòa", "Xã Hùng Lợi", "Xã Trung Sơn", "Xã Thái Bình", "Xã Tân Long", "Xã Xuân Vân", "Xã Lực Hành", "Xã Yên Sơn", "Xã Nhữ Khê", "Xã Tân Trào", "Xã Minh Thanh", "Xã Sơn Dương", "Xã Bình Ca", "Xã Tân Thanh", "Xã Sơn Thủy", "Xã Phú Lương", "Xã Trường Sinh", "Xã Hồng Sơn", "Xã Đông Thọ"
+    "Xã Thượng Lâm", "Xã Lâm Bình", "Xã Minh Quang", "Xã Bình An", "Xã Côn Lôn", "Xã Yên Hoa", "Xã Thượng Nông", "Xã Hồng Thái", "Xã Nà Hang", "Xã Tân Mỹ", "Xã Yên Lập", "Xã Tân An", "Xã Chiêm Hóa", "Xã Hòa An", "Xã Kiên Đài", "Xã Tri Phú", "Xã Kim Bình", "Xã Yên Nguyên", "Xã Yên Phú", "Xã Bạch Xa", "Xã Phù Lưu", "Xã Hàm Yên", "Xã Bình Xa", "Xã Thái Sơn", "Xã Thái Hòa", "Xã Hùng Lợi", "Xã Trung Sơn", "Xã Thái Bình", "Xã Tân Long", "Xã Xuân Vân", "Xã Lực Hành", "Xã Yên Sơn", "Xã Nhữ Khê", "Xã Tân Trào", "Xã Minh Thanh", "Xã Sơn Dương", "Xã Bình Ca", "Xã Tân Thanh", "Xã Sơn Thủy", "Xã Phú Lương", "Xã Trường Sinh", "Xã Hồng Sơn", "Xã Đông Thọ",
+    "Xã Lũng Cú", "Xã Đồng Văn", "Xã Sà Phìn", "Xã Phố Bảng", "Xã Lũng Phìn", "Xã Sủng Máng", "Xã Sơn Vĩ", "Xã Mèo Vạc", "Xã Khâu Vai", "Xã Niêm Sơn", "Xã Tát Ngà", "Xã Thắng Mố", "Xã Bạch Đích", "Xã Yên Minh", "Xã Mậu Duệ", "Xã Du Già", "Xã Đường Thượng", "Xã Lùng Tám", "Xã Cán Tỷ", "Xã Nghĩa Thuận", "Xã Quản Bạ", "Xã Tùng Vài", "Xã Yên Cường", "Xã Đường Hồng", "Xã Bắc Mê", "Xã Minh Ngọc", "Xã Ngọc Đường", "Xã Lao Chải", "Xã Thanh Thủy", "Xã Phú Linh", "Xã Linh Hồ", "Xã Bạch Ngọc", "Xã Vị Xuyên", "Xã Việt Lâm", "Xã Tân Quang", "Xã Đồng Tâm", "Xã Liên Hiệp", "Xã Bằng Hành", "Xã Bắc Quang", "Xã Hùng An", "Xã Vĩnh Tuy", "Xã Đồng Yên", "Xã Tiên Yên", "Xã Xuân Giang", "Xã Bằng Lang", "Xã Yên Thành", "Xã Quang Bình", "Xã Tân Trịnh", "Xã Thông Nguyên", "Xã Hồ Thầu", "Xã Nậm Dịch", "Xã Tân Tiến", "Xã Hoàng Su Phì", "Xã Thàng Tín", "Xã Bản Máy", "Xã Pờ Ly Ngài", "Xã Xín Mần", "Xã Pà Vầy Sủ", "Xã Nấm Dẩn", "Xã Trung Thịnh", "Xã Khuôn Lùng", "Xã Trung Hà", "Xã Kiến Thiết", "Xã Hùng Đức", "Xã Minh Sơn", "Xã Minh Tân", "Xã Thuận Hòa", "Xã Tùng Bá", "Xã Thượng Sơn", "Xã Cao Bồ", "Xã Ngọc Long", "Xã Giáp Trung", "Xã Tiên Nguyên", "Xã Quảng Nguyên"
 ]
 
 # ==========================================================
@@ -103,7 +105,7 @@ if menu == "📝 Nhập Báo Cáo (Cơ sở)":
             st.markdown('<div class="section-header">📍 THÔNG TIN CHUNG</div>', unsafe_allow_html=True)
             col1, col2 = st.columns(2)
             with col1: voi_don_vi = st.selectbox("Tên đơn vị:", DANH_SACH_DON_VI)
-            with col2: voi_ky_bc = st.selectbox("Kỳ báo cáo:", ["Chọn kỳ..."] + [f"Tháng {i}" for i in range(1, 13)] + ["Quý I", "Quý II", "Quý III", "Quý IV"])
+            with col2: voi_ky_bc = st.selectbox("Kỳ báo cáo:", ["Chọn kỳ..."] + [f"Tháng {i}" for i in range(1, 13)] + ["Quý I", "Quý II", "Quý III", "Quý IV", "6 tháng đầu năm", "6 tháng cuối năm", "Cả năm"])
             
             st.markdown('<div class="section-header">📊 SỐ LIỆU CHI TIẾT (7 NHÓM)</div>', unsafe_allow_html=True)
 
@@ -161,7 +163,7 @@ if menu == "📝 Nhập Báo Cáo (Cơ sở)":
                 g7_3 = c3.number_input("Số nhiệm vụ đang làm", min_value=0, step=1)
 
             st.write("---")
-            submitted = st.form_submit_button("🚀 GỬI BÁO CÁO LÊN TỈNH ỦY", use_container_width=True)
+            submitted = st.form_submit_button("🚀 GỬI BÁO CÁO LÊN BAN TỈNH ỦY", use_container_width=True)
 
             if submitted:
                 if voi_don_vi == "Chọn đơn vị..." or voi_ky_bc == "Chọn kỳ...": st.error("⚠️ Vui lòng chọn Đơn vị và Kỳ báo cáo!")
@@ -203,12 +205,10 @@ elif menu == "📊 Bảng Điều Khiển (Lãnh đạo)":
 
         with st.spinner("Đang đồng bộ dữ liệu từ Tỉnh ủy..."):
             try:
-                # Kéo dữ liệu từ bảng bao_cao
                 res = supabase.table("bao_cao").select("*").execute()
                 df_goc = pd.DataFrame(res.data)
                 
                 if not df_goc.empty:
-                    # Bóc tách file JSON để phân tích
                     df_goc['vb_tham_muu'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('lanh_dao', {}).get('vb_tham_muu', 0))
                     df_goc['hoi_nghi_qt'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('quan_triet', {}).get('hoi_nghi', 0))
                     df_goc['ty_le_dv'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('quan_triet', {}).get('ty_le_dv', 0))
@@ -218,7 +218,6 @@ elif menu == "📊 Bảng Điều Khiển (Lãnh đạo)":
                     df_goc['nv_hoan_thanh'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('trong_tam', {}).get('nv_hoan_thanh', 0))
                     df_goc['nv_giao'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('trong_tam', {}).get('nv_giao', 0))
 
-                    # --- BỘ LỌC THỜI GIAN ---
                     st.markdown("### 🗓️ LỌC DỮ LIỆU THEO KỲ BÁO CÁO")
                     ky_loc = st.selectbox("Chọn kỳ muốn xem:", ["Tất cả (Từ trước đến nay)"] + list(df_goc['ky_bao_cao'].unique()))
                     
@@ -227,13 +226,11 @@ elif menu == "📊 Bảng Điều Khiển (Lãnh đạo)":
                     if len(df) == 0:
                         st.warning("Chưa có báo cáo nào cho kỳ này.")
                     else:
-                        # --- HÀNG METRICS 1 ---
                         m1, m2, m3 = st.columns(3)
                         with m1: st.markdown(f'<div class="metric-box"><div class="metric-label">🏢 Số Báo cáo đã nộp</div><div class="metric-value">{len(df)}</div></div>', unsafe_allow_html=True)
                         with m2: st.markdown(f'<div class="metric-box"><div class="metric-label">📜 VB Tham mưu Cấp trên</div><div class="metric-value">{int(df["vb_tham_muu"].sum())}</div></div>', unsafe_allow_html=True)
                         with m3: st.markdown(f'<div class="metric-box"><div class="metric-label">🤝 Mô hình Dân vận Khéo HQ</div><div class="metric-value">{int(df["dvk_hieu_qua"].sum())}</div></div>', unsafe_allow_html=True)
                         
-                        # --- HÀNG METRICS 2 ---
                         m4, m5, m6 = st.columns(3)
                         with m4: st.markdown(f'<div class="metric-box"><div class="metric-label">⚠️ Vấn đề nổi cộm phát hiện</div><div class="metric-value">{int(df["noi_com"].sum())}</div></div>', unsafe_allow_html=True)
                         with m5: st.markdown(f'<div class="metric-box"><div class="metric-label">📈 Tỷ lệ Đảng viên học tập (TB)</div><div class="metric-value">{df["ty_le_dv"].mean():.1f}%</div></div>', unsafe_allow_html=True)
@@ -241,7 +238,6 @@ elif menu == "📊 Bảng Điều Khiển (Lãnh đạo)":
                         
                         st.write("---")
                         
-                        # --- BIỂU ĐỒ ---
                         c_chart1, c_chart2 = st.columns(2)
                         with c_chart1:
                             st.markdown("#### 📱 Lượt chia sẻ Tuyên truyền trên MXH")
@@ -250,13 +246,9 @@ elif menu == "📊 Bảng Điều Khiển (Lãnh đạo)":
                             
                         with c_chart2:
                             st.markdown("#### 🎯 Tỷ lệ giải quyết Nhiệm vụ trọng tâm")
-                            # Gom nhóm dữ liệu
                             tong_giao = df["nv_giao"].sum()
                             tong_xong = df["nv_hoan_thanh"].sum()
-                            df_nv = pd.DataFrame({
-                                "Trạng thái": ["Đã hoàn thành", "Đang/Chưa thực hiện"],
-                                "Số lượng": [tong_xong, max(0, tong_giao - tong_xong)]
-                            })
+                            df_nv = pd.DataFrame({"Trạng thái": ["Đã hoàn thành", "Đang/Chưa thực hiện"], "Số lượng": [tong_xong, max(0, tong_giao - tong_xong)]})
                             st.bar_chart(df_nv.set_index("Trạng thái"))
 
                         st.write("---")
