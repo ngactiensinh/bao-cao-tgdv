@@ -49,7 +49,7 @@ def get_months_for_filter(filter_type):
     return DANH_SACH_THANG
 
 # ==========================================
-# CSS SIÊU VIP (MÀU CHUẨN & IN ẤN)
+# CSS SIÊU VIP (ĐỎ SẪM - XANH NAVY - TRẮNG)
 # ==========================================
 st.markdown("""
 <style>
@@ -60,14 +60,16 @@ st.markdown("""
     [data-testid="stForm"] {background-color: #ffffff; padding: 25px; border-radius: 12px; border-top: 5px solid #004B87;}
     [data-testid="stExpander"] {background-color: #ffffff; border-left: 4px solid #C8102E; border-radius: 5px; margin-bottom: 10px;}
     .metric-card {background-color: #ffffff; padding: 20px; border-radius: 10px; border-top: 4px solid #C8102E; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center;}
+    .metric-title {font-size: 14px; color: #004B87; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;}
     .metric-number {font-size: 28px; color: #C8102E; font-weight: 900; margin: 0;}
     
-    /* CSS CHO IN ẤN PDF */
+    /* CSS CHO IN ẤN PDF: ẨN MỌI NÚT VÀ MENU KHI IN */
     @media print {
-        .stButton, .stSidebar, [data-testid="stHeader"], footer { display: none !important; }
+        .stButton, .stSidebar, [data-testid="stHeader"], footer, .hide-on-print { display: none !important; }
         .stApp { background-color: white !important; }
-        [data-testid="stExpander"] { border: 1px solid #ddd !important; }
-        .main-header { color: black !important; }
+        [data-testid="stExpander"] { border: 1px solid #004B87 !important; }
+        .main-header { color: #004B87 !important; }
+        .metric-card { border: 1px solid #C8102E !important; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -122,7 +124,6 @@ with tab_nhap:
         nguoi_bao_cao = c_top2.text_input("👤 Người báo cáo / SĐT:")
         ky_bao_cao = c_top3.selectbox("🗓️ Tháng báo cáo:", DANH_SACH_THANG, index=None, placeholder="Chọn tháng...")
         
-        # Nhóm 1 - 7 (Gom gọn)
         with st.expander("1. CÔNG TÁC LÃNH ĐẠO, CHỈ ĐẠO", expanded=False):
             c1, c2, c3 = st.columns(3)
             ld_vanban = c1.number_input("Số văn bản cấp ủy xã ban hành", min_value=0, value=0)
@@ -201,6 +202,7 @@ with tab_nhap:
             tl_mohinh = st.text_area("Nêu các mô hình, cách làm sáng tạo hiệu quả:")
             tl_khokhan = st.text_area("Các khó khăn, vướng mắc trong việc số hóa tài liệu:")
 
+        st.markdown("<style>.stButton>button[kind='primary'] {background-color: #C8102E; border:none;}</style>", unsafe_allow_html=True)
         if st.form_submit_button("🚀 GỬI / CẬP NHẬT BÁO CÁO LÊN BAN TỈNH ỦY", type="primary", use_container_width=True):
             if not don_vi or not ky_bao_cao: st.error("⚠️ Vui lòng chọn Đơn vị và Tháng!")
             else:
@@ -226,7 +228,7 @@ with tab_nhap:
                 st.success(f"✅ Báo cáo {don_vi} - {ky_bao_cao} đã được ghi nhận thành công!")
 
 # ==========================================
-# TAB ADMIN - DASHBOARD ĐA DẠNG
+# TAB ADMIN - DASHBOARD & BIỂU ĐỒ SANG TRỌNG
 # ==========================================
 if st.session_state.role == "admin":
     with tab_bieudo:
@@ -234,9 +236,9 @@ if st.session_state.role == "admin":
         if not data: st.warning("Chưa có số liệu.")
         else:
             df_raw = pd.DataFrame(data)
-            st.markdown("### 🗓️ BỘ LỌC TỔNG HỢP")
+            st.markdown("<h3 style='color:#004B87;'>🗓️ BỘ LỌC TỔNG HỢP</h3>", unsafe_allow_html=True)
             c_f1, c_f2 = st.columns(2)
-            loai_bc = c_f1.selectbox("Chọn kỳ tổng hợp:", ["Tháng", "Quý I", "Quý II", "Quý III", "Quý IV", "6 Tháng", "9 Tháng", "Cả Năm"])
+            loai_bc = c_f1.selectbox("Chọn kỳ tổng hợp:", ["Tháng", "Quý I", "Quý II", "Quý III", "Quý IV", "6 Tháng Đầu Năm", "6 Tháng Cuối Năm", "9 Tháng", "Cả Năm"])
             if loai_bc == "Tháng":
                 th_bc = c_f2.selectbox("Tháng cụ thể:", DANH_SACH_THANG)
                 df = df_raw[df_raw['ky_bao_cao'] == th_bc]
@@ -249,7 +251,14 @@ if st.session_state.role == "admin":
                 num_cols = df.select_dtypes(include='number').columns
                 df_sum = df.groupby('don_vi')[num_cols].sum().reset_index()
                 
-                # Metrics Top
+                # Nút Print bằng JS bọc trong thẻ HTML cực đẹp và an toàn (sử dụng window.parent.print())
+                st.markdown("""
+                <div class="hide-on-print" style="margin-bottom: 20px; text-align: right;">
+                    <button onclick='window.parent.print()' style='background-color: #004B87; color: white; padding: 10px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 14px;'>🖨️ XUẤT BÁO CÁO PDF (IN)</button>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px; font-style: italic;">(Hoặc ấn phím Ctrl + P / Cmd + P)</div>
+                </div>
+                """, unsafe_allow_html=True)
+
                 c1, c2, c3, c4 = st.columns(4)
                 c1.markdown(f"<div class='metric-card'><p class='metric-title'>VB Chỉ đạo</p><p class='metric-number'>{df_sum['ld_vanban'].sum()}</p></div>", unsafe_allow_html=True)
                 c2.markdown(f"<div class='metric-card'><p class='metric-title'>Mô hình Dân vận Khéo</p><p class='metric-number'>{df_sum['dv_mh_hieuqua'].sum()}</p></div>", unsafe_allow_html=True)
@@ -257,55 +266,53 @@ if st.session_state.role == "admin":
                 c4.markdown(f"<div class='metric-card'><p class='metric-title'>Đơn vị đã nộp</p><p class='metric-number'>{len(df_sum)}</p></div>", unsafe_allow_html=True)
 
                 st.markdown("<hr>", unsafe_allow_html=True)
-                st.markdown(f"<button onclick='window.print()' style='background:#C8102E; color:white; padding:10px 20px; border-radius:5px; float:right; font-weight:bold;'>🖨️ XUẤT BÁO CÁO PDF</button><div style='clear:both;'></div>", unsafe_allow_html=True)
 
-                # DÀN BIỂU ĐỒ MÁU LỬA
+                # DÀN BIỂU ĐỒ HỆ MÀU XANH NAVY - ĐỎ SẪM - TRẮNG
                 col_c1, col_c2 = st.columns(2)
                 with col_c1:
-                    # 1. Biểu đồ Cột nhóm: Chuyển đổi số (CB vs Dân)
                     fig1 = go.Figure(data=[
                         go.Bar(name='CB biết AI', x=df_sum['don_vi'], y=df_sum['kq_cb_ai'], marker_color='#004B87'),
                         go.Bar(name='Dân có Kỹ năng số', x=df_sum['don_vi'], y=df_sum['kq_nd_kynang'], marker_color='#C8102E')
                     ])
-                    fig1.update_layout(title="So sánh Kỹ năng số Cán bộ vs Người dân", barmode='group')
+                    fig1.update_layout(title="Kỹ năng số: Cán bộ vs Người dân", barmode='group', template="plotly_white", plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
                     st.plotly_chart(fig1, use_container_width=True)
                     
-                    # 2. Biểu đồ Đường: Tuyên truyền MXH
                     fig2 = px.line(df_sum, x='don_vi', y='tt_mxh_tuongtac', title="Tương tác Mạng xã hội theo Đơn vị", markers=True)
-                    fig2.update_traces(line_color='#28a745')
+                    fig2.update_traces(line_color='#C8102E', marker=dict(size=8, color='#004B87'))
+                    fig2.update_layout(template="plotly_white", plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
                     st.plotly_chart(fig2, use_container_width=True)
 
                 with col_c2:
-                    # 3. Biểu đồ Cột chồng: Dân vận khéo
                     fig3 = go.Figure(data=[
-                        go.Bar(name='Mô hình mới', x=df_sum['don_vi'], y=df_sum['dv_mh_dangky'], marker_color='#ffc107'),
-                        go.Bar(name='Hiệu quả', x=df_sum['don_vi'], y=df_sum['dv_mh_hieuqua'], marker_color='#28a745')
+                        go.Bar(name='Mô hình mới đăng ký', x=df_sum['don_vi'], y=df_sum['dv_mh_dangky'], marker_color='#004B87'),
+                        go.Bar(name='Đang hoạt động hiệu quả', x=df_sum['don_vi'], y=df_sum['dv_mh_hieuqua'], marker_color='#C8102E')
                     ])
-                    fig3.update_layout(title="Hiệu quả Phong trào Dân vận khéo (Mới vs Hiệu quả)", barmode='stack')
+                    fig3.update_layout(title="Hiệu quả Phong trào Dân vận khéo", barmode='stack', template="plotly_white", plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
                     st.plotly_chart(fig3, use_container_width=True)
 
-                    # 4. Biểu đồ Tròn: Dư luận xã hội (Tổng quát)
                     fig4 = px.pie(values=[df_sum['dl_baocao'].sum(), df_sum['dl_vande'].sum(), df_sum['dl_xuly'].sum()], 
                                   names=['Báo cáo gửi đi', 'Vấn đề phát hiện', 'Vụ việc đã xử lý'],
-                                  title="Cơ cấu hoạt động Dư luận xã hội", hole=.3)
+                                  title="Cơ cấu hoạt động Dư luận xã hội", hole=.4,
+                                  color_discrete_sequence=['#004B87', '#C8102E', '#E6E6E6'])
+                    fig4.update_layout(template="plotly_white", paper_bgcolor='rgba(0,0,0,0)')
                     st.plotly_chart(fig4, use_container_width=True)
 
-                st.markdown("### 📋 BẢNG DỮ LIỆU TỔNG HỢP")
+                st.markdown("<h3 class='main-header' style='text-align:left; font-size:20px;'>📋 BẢNG DỮ LIỆU TỔNG HỢP</h3>", unsafe_allow_html=True)
                 st.dataframe(df_sum, use_container_width=True)
 
     with tab_admin:
-        st.markdown("### ⚠️ KHU VỰC QUẢN TRỊ DỮ LIỆU")
+        st.markdown("<h3 style='color:#C8102E;'>⚠️ KHU VỰC QUẢN TRỊ DỮ LIỆU</h3>", unsafe_allow_html=True)
         c_del1, c_del2 = st.columns(2)
         with c_del1:
-            st.markdown("#### 🗑️ Xóa báo cáo sai (Lọc dữ liệu)")
+            st.markdown("#### 🗑️ Xóa báo cáo sai (Dọn dẹp Test)")
             current_data = load_data()
             if current_data:
                 dv_del = st.selectbox("Chọn đơn vị muốn xóa:", list(set([d['don_vi'] for d in current_data])), key="del_dv")
                 th_del = st.selectbox("Chọn tháng muốn xóa:", list(set([d['ky_bao_cao'] for d in current_data if d['don_vi'] == dv_del])), key="del_th")
                 if st.button("🔥 XÁC NHẬN XÓA BÁO CÁO NÀY"):
                     new_data = [d for d in current_data if not (d['don_vi'] == dv_del and d['ky_bao_cao'] == th_del)]
-                    save_data(new_data); st.success(f"Đã xóa dữ liệu {dv_del} - {th_del}"); st.rerun()
-            else: st.info("Chưa có dữ liệu để xóa.")
+                    save_data(new_data); st.success(f"Đã dọn dẹp sạch sẽ dữ liệu của {dv_del} - {th_del}"); st.rerun()
+            else: st.info("Chưa có dữ liệu báo cáo nào để xóa.")
             
         with c_del2:
             st.markdown("#### 🏢 Quản lý danh sách Đơn vị")
