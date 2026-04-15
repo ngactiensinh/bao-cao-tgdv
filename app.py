@@ -1,260 +1,235 @@
 import streamlit as st
 import pandas as pd
-import base64
 import json
-from supabase import create_client, Client
+import os
+import plotly.express as px
 
-st.set_page_config(page_title="Báo cáo TGDV - Tuyên Quang", page_icon="🌟", layout="wide")
+st.set_page_config(page_title="Hệ thống Báo cáo TGDV", page_icon="📊", layout="wide")
 
 # ==========================================
-# CẤU HÌNH SUPABASE
+# CẤU HÌNH & LƯU TRỮ DỮ LIỆU
 # ==========================================
-SUPABASE_URL = "https://qqzsdxhqrdfvxnlurnyb.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxenNkeGhxcmRmdnhubHVybnliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MjY0NjAsImV4cCI6MjA5MTIwMjQ2MH0.H62F5zYEZ5l47fS4IdAE2JdRdI7inXQqWG0nvXhn2P8"
+DATA_FILE = "dulieu_baocao.json"
+CONFIG_FILE = "config_donvi.json"
 
-try:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-except:
-    pass
+# Danh sách đơn vị mặc định (Mô hình 2 cấp: Tỉnh và Xã/Phường)
+DEFAULT_UNITS = [
+    "Ban Tuyên giáo Tỉnh ủy", "Phường Minh Xuân", "Phường Tân Quang", 
+    "Phường Phan Thiết", "Xã Tràng Đà", "Xã Kim Phú", "Phường Mỹ Lâm"
+]
+ADMIN_PASSWORD = "admin123"
 
-# --- MẬT KHẨU ---
-MAT_KHAU_CO_SO = "TGDV@2026"
-MAT_KHAU_LANH_DAO = "Admin@2026"
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r", encoding="utf-8") as f: return json.load(f)
+    return []
 
-# --- CSS TÙY CHỈNH ---
+def save_data(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f: json.dump(data, f, ensure_ascii=False, indent=4)
+
+def load_units():
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f: return json.load(f)
+    return DEFAULT_UNITS
+
+def save_units(units):
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f: json.dump(units, f, ensure_ascii=False, indent=4)
+
+# ==========================================
+# GIAO DIỆN CHÍNH (CHIA TAB)
+# ==========================================
 st.markdown("""
 <style>
-    .header-oval {
-        background-color: #ffffff;
-        border: 4px solid #C8102E;
-        border-radius: 60px;
-        padding: 15px 30px;
-        margin-bottom: 30px;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 25px;
-        flex-wrap: wrap;
-    }
-    .main-title { font-size: 32px; font-weight: 900; color: #C8102E; text-transform: uppercase; margin: 0; line-height: 1.2; text-align: center;}
-    .sub-title { font-size: 18px; font-weight: bold; color: #004B87; margin-top: 5px; text-align: center;}
-    .section-header { font-size: 18px; font-weight: bold; color: #ffffff; background-color: #004B87; padding: 10px; border-radius: 5px; margin-top: 20px; margin-bottom: 10px;}
-    .metric-box { background-color: #f0f2f6; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px;}
-    .metric-value { font-size: 28px; font-weight: bold; color: #C8102E; }
-    .metric-label { font-size: 15px; font-weight: bold; color: #004B87; }
+    .main-header {color: #004B87; font-weight: 900; text-align: center; text-transform: uppercase; margin-bottom: 20px;}
+    .sub-header {color: #C8102E; font-weight: bold; border-bottom: 2px solid #C8102E; padding-bottom: 5px; margin-top: 20px;}
+    .metric-card {background-color: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #004B87; margin-bottom: 15px;}
 </style>
 """, unsafe_allow_html=True)
 
-# --- HÀM TẠO TIÊU ĐỀ ---
-def hien_thi_tieu_de(tieu_de_chinh):
-    logo_html = ""
-    try:
-        with open("Logo TGDV.png", "rb") as f:
-            data = base64.b64encode(f.read()).decode("utf-8")
-            logo_html = f'<img src="data:image/png;base64,{data}" style="height: 85px;">'
-    except:
-        logo_html = '<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Qu%E1%BB%91c_huy_Vi%E1%BB%87t_Nam.svg/250px-Qu%E1%BB%91c_huy_Vi%E1%BB%87t_Nam.svg.png" style="height: 85px;">'
+st.markdown("<h1 class='main-header'>HỆ THỐNG THU THẬP BÁO CÁO CƠ SỞ</h1>", unsafe_allow_html=True)
+
+tab1, tab2, tab3 = st.tabs(["📝 NHẬP BÁO CÁO", "📊 THỐNG KÊ & BIỂU ĐỒ", "⚙️ QUẢN TRỊ ADMIN"])
+
+# ==========================================
+# TAB 1: FORM NHẬP BÁO CÁO
+# ==========================================
+with tab1:
+    st.info("💡 **Hướng dẫn:** Các đơn vị điền đầy đủ số liệu vào các trường dưới đây. Các mục tỷ lệ vui lòng điền Số đạt được / Tổng số.")
+    don_vi_list = load_units()
     
-    st.markdown(f"""
-    <div class="header-oval">
-        <div>{logo_html}</div>
-        <div>
-            <div class="main-title">{tieu_de_chinh}</div>
-            <div class="sub-title">BAN TUYÊN GIÁO VÀ DÂN VẬN TỈNH ỦY TUYÊN QUANG</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.form("form_bao_cao"):
+        col1, col2 = st.columns(2)
+        don_vi = col1.selectbox("🏢 Chọn Đơn vị báo cáo:", don_vi_list)
+        nguoi_bao_cao = col2.text_input("👤 Người báo cáo / SĐT:")
+        
+        st.markdown("<h3 class='sub-header'>I. CÔNG TÁC TUYÊN TRUYỀN (BÌNH DÂN HỌC VỤ SỐ)</h3>", unsafe_allow_html=True)
+        c1, c2, c3 = st.columns(3)
+        tt_tinbai = c1.number_input("Số tin, bài tuyên truyền", min_value=0, value=0)
+        tt_cuocthi = c2.number_input("Số cuộc thi, hội thi", min_value=0, value=0)
+        tt_tailieu = c3.number_input("Số tài liệu, tờ gấp, video...", min_value=0, value=0)
+        
+        st.markdown("<h3 class='sub-header'>II. KẾT QUẢ THỰC HIỆN</h3>", unsafe_allow_html=True)
+        kq_tocongnghe = st.number_input("1. Số lượng tổ công nghệ số cộng đồng", min_value=0, value=0)
+        
+        st.write("**2. Sinh hoạt chuyên đề & Đảng viên điện tử**")
+        c1, c2 = st.columns(2)
+        kq_chibo_cd = c1.number_input("Số chi bộ SH chuyên đề Kỹ năng số", min_value=0, value=0)
+        kq_chibo_tong1 = c2.number_input("Tổng số chi bộ (Mục 2a)", min_value=1, value=1)
+        c3, c4 = st.columns(2)
+        kq_chibo_sotay = c3.number_input("Số chi bộ dùng Sổ tay đảng viên ĐT", min_value=0, value=0)
+        kq_chibo_tong2 = c4.number_input("Tổng số chi bộ (Mục 2b)", min_value=1, value=1)
+        
+        st.write("**3. Cán bộ, công chức, viên chức (CBCCVC)**")
+        c1, c2 = st.columns(2)
+        kq_cb_ai = c1.number_input("Số CBCCVC biết ứng dụng AI", min_value=0, value=0)
+        kq_cb_tong1 = c2.number_input("Tổng số CBCCVC (Mục 3a)", min_value=1, value=1)
+        c3, c4 = st.columns(2)
+        kq_cb_khoahoc = c3.number_input("Số CBCCVC hoàn thành khóa học CĐS", min_value=0, value=0)
+        kq_cb_tong2 = c4.number_input("Tổng số CBCCVC (Mục 3b)", min_value=1, value=1)
+        
+        st.write("**4. Người dân & Người lao động**")
+        c1, c2 = st.columns(2)
+        kq_nd_kynang = c1.number_input("Số người dân có kỹ năng số", min_value=0, value=0)
+        kq_nd_tong1 = c2.number_input("Tổng số người dân trưởng thành (Mục 4a)", min_value=1, value=1)
+        c3, c4 = st.columns(2)
+        kq_nd_vneid = c3.number_input("Số người dân phổ cập trên VNeID", min_value=0, value=0)
+        kq_nd_tong2 = c4.number_input("Tổng số ND trưởng thành (Mục 4b)", min_value=1, value=1)
+        c5, c6 = st.columns(2)
+        kq_nld_kynang = c5.number_input("Số NLĐ trong DN/HTX có kỹ năng số", min_value=0, value=0)
+        kq_nld_tong = c6.number_input("Tổng số NLĐ trong DN/HTX (Mục 4c)", min_value=1, value=1)
+        c7, c8 = st.columns(2)
+        kq_nd_smartphone = c7.number_input("Số người dân dùng Smartphone", min_value=0, value=0)
+        kq_nd_tong3 = c8.number_input("Tổng số người dân (Mục 4d)", min_value=1, value=1)
+        
+        st.write("**5. Lớp bồi dưỡng & Hỗ trợ**")
+        c1, c2, c3 = st.columns(3)
+        kq_lop_cb = c1.number_input("Số lớp bồi dưỡng cho CBCCVC", min_value=0, value=0)
+        kq_lop_nd = c2.number_input("Số buổi học cộng đồng cấp Xã/Phường", min_value=0, value=0)
+        kq_dn_hotro = c3.number_input("Số DN viễn thông hỗ trợ hạ tầng", min_value=0, value=0)
+        
+        st.markdown("<h3 class='sub-header'>III. TỰ LUẬN & ĐÁNH GIÁ</h3>", unsafe_allow_html=True)
+        tl_mohinh = st.text_area("🌟 Số mô hình, cách làm hay, sáng tạo (Nêu cụ thể tên):")
+        tl_khokhan = st.text_area("⚠️ Khó khăn, vướng mắc chưa số hóa tài liệu:")
+        
+        submitted = st.form_submit_button("📤 GỬI BÁO CÁO", use_container_width=True)
+        if submitted:
+            new_record = {
+                "don_vi": don_vi, "nguoi_bao_cao": nguoi_bao_cao,
+                "tt_tinbai": tt_tinbai, "tt_cuocthi": tt_cuocthi, "tt_tailieu": tt_tailieu,
+                "kq_tocongnghe": kq_tocongnghe, 
+                "kq_chibo_cd": kq_chibo_cd, "kq_chibo_tong1": kq_chibo_tong1,
+                "kq_chibo_sotay": kq_chibo_sotay, "kq_chibo_tong2": kq_chibo_tong2,
+                "kq_cb_ai": kq_cb_ai, "kq_cb_tong1": kq_cb_tong1,
+                "kq_cb_khoahoc": kq_cb_khoahoc, "kq_cb_tong2": kq_cb_tong2,
+                "kq_nd_kynang": kq_nd_kynang, "kq_nd_tong1": kq_nd_tong1,
+                "kq_nd_vneid": kq_nd_vneid, "kq_nd_tong2": kq_nd_tong2,
+                "kq_nld_kynang": kq_nld_kynang, "kq_nld_tong": kq_nld_tong,
+                "kq_nd_smartphone": kq_nd_smartphone, "kq_nd_tong3": kq_nd_tong3,
+                "kq_lop_cb": kq_lop_cb, "kq_lop_nd": kq_lop_nd, "kq_dn_hotro": kq_dn_hotro,
+                "tl_mohinh": tl_mohinh, "tl_khokhan": tl_khokhan
+            }
+            data = load_data()
+            # Xóa báo cáo cũ của đơn vị này nếu đã có, để ghi đè báo cáo mới nhất
+            data = [d for d in data if d['don_vi'] != don_vi]
+            data.append(new_record)
+            save_data(data)
+            st.success(f"✅ Báo cáo của {don_vi} đã được lưu thành công vào hệ thống!")
 
-# --- MENU ĐIỀU HƯỚNG ---
-st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Qu%E1%BB%91c_huy_Vi%E1%BB%87t_Nam.svg/250px-Qu%E1%BB%91c_huy_Vi%E1%BB%87t_Nam.svg.png", width=100)
-st.sidebar.markdown("### HỆ THỐNG BÁO CÁO TGDV")
-menu = st.sidebar.radio("📌 Lựa chọn chức năng:", ["📝 Nhập Báo Cáo (Cơ sở)", "📊 Bảng Điều Khiển (Lãnh đạo)"])
-st.sidebar.write("---")
-
-# ĐÃ LỌC SẠCH TRUNG TÂM CHÍNH TRỊ - CHỈ CÒN 124 XÃ/PHƯỜNG VÀ 4 ĐẢNG ỦY
-DANH_SACH_DON_VI = [
-    "Chọn đơn vị...",
-    "Đảng ủy Công an tỉnh", "Đảng ủy Quân sự tỉnh", "Đảng ủy các cơ quan Đảng tỉnh", "Đảng ủy Ủy ban nhân dân tỉnh",
-    "Phường Mỹ Lâm", "Phường Minh Xuân", "Phường Nông Tiến", "Phường An Tường", "Phường Bình Thuận", "Phường Hà Giang 1", "Phường Hà Giang 2",
-    "Xã Thượng Lâm", "Xã Lâm Bình", "Xã Minh Quang", "Xã Bình An", "Xã Côn Lôn", "Xã Yên Hoa", "Xã Thượng Nông", "Xã Hồng Thái", "Xã Nà Hang", "Xã Tân Mỹ", "Xã Yên Lập", "Xã Tân An", "Xã Chiêm Hóa", "Xã Hòa An", "Xã Kiên Đài", "Xã Tri Phú", "Xã Kim Bình", "Xã Yên Nguyên", "Xã Yên Phú", "Xã Bạch Xa", "Xã Phù Lưu", "Xã Hàm Yên", "Xã Bình Xa", "Xã Thái Sơn", "Xã Thái Hòa", "Xã Hùng Lợi", "Xã Trung Sơn", "Xã Thái Bình", "Xã Tân Long", "Xã Xuân Vân", "Xã Lực Hành", "Xã Yên Sơn", "Xã Nhữ Khê", "Xã Tân Trào", "Xã Minh Thanh", "Xã Sơn Dương", "Xã Bình Ca", "Xã Tân Thanh", "Xã Sơn Thủy", "Xã Phú Lương", "Xã Trường Sinh", "Xã Hồng Sơn", "Xã Đông Thọ",
-    "Xã Lũng Cú", "Xã Đồng Văn", "Xã Sà Phìn", "Xã Phố Bảng", "Xã Lũng Phìn", "Xã Sủng Máng", "Xã Sơn Vĩ", "Xã Mèo Vạc", "Xã Khâu Vai", "Xã Niêm Sơn", "Xã Tát Ngà", "Xã Thắng Mố", "Xã Bạch Đích", "Xã Yên Minh", "Xã Mậu Duệ", "Xã Du Già", "Xã Đường Thượng", "Xã Lùng Tám", "Xã Cán Tỷ", "Xã Nghĩa Thuận", "Xã Quản Bạ", "Xã Tùng Vài", "Xã Yên Cường", "Xã Đường Hồng", "Xã Bắc Mê", "Xã Minh Ngọc", "Xã Ngọc Đường", "Xã Lao Chải", "Xã Thanh Thủy", "Xã Phú Linh", "Xã Linh Hồ", "Xã Bạch Ngọc", "Xã Vị Xuyên", "Xã Việt Lâm", "Xã Tân Quang", "Xã Đồng Tâm", "Xã Liên Hiệp", "Xã Bằng Hành", "Xã Bắc Quang", "Xã Hùng An", "Xã Vĩnh Tuy", "Xã Đồng Yên", "Xã Tiên Yên", "Xã Xuân Giang", "Xã Bằng Lang", "Xã Yên Thành", "Xã Quang Bình", "Xã Tân Trịnh", "Xã Thông Nguyên", "Xã Hồ Thầu", "Xã Nậm Dịch", "Xã Tân Tiến", "Xã Hoàng Su Phì", "Xã Thàng Tín", "Xã Bản Máy", "Xã Pờ Ly Ngài", "Xã Xín Mần", "Xã Pà Vầy Sủ", "Xã Nấm Dẩn", "Xã Trung Thịnh", "Xã Khuôn Lùng", "Xã Trung Hà", "Xã Kiến Thiết", "Xã Hùng Đức", "Xã Minh Sơn", "Xã Minh Tân", "Xã Thuận Hòa", "Xã Tùng Bá", "Xã Thượng Sơn", "Xã Cao Bồ", "Xã Ngọc Long", "Xã Giáp Trung", "Xã Tiên Nguyên", "Xã Quảng Nguyên"
-]
-
-# ==========================================================
-# 1. TRANG NHẬP BÁO CÁO
-# ==========================================================
-if menu == "📝 Nhập Báo Cáo (Cơ sở)":
-    if "dang_nhap_co_so" not in st.session_state: st.session_state["dang_nhap_co_so"] = False
-    hien_thi_tieu_de("HỆ THỐNG THU THẬP BÁO CÁO")
-
-    if not st.session_state["dang_nhap_co_so"]:
-        st.markdown('<div class="section-header" style="text-align:center;">🔒 ĐĂNG NHẬP CƠ SỞ</div>', unsafe_allow_html=True)
-        mk_nhap = st.text_input("Nhập mật khẩu cơ sở:", type="password")
-        if st.button("🔑 Mở khóa"):
-            if mk_nhap == MAT_KHAU_CO_SO:
-                st.session_state["dang_nhap_co_so"] = True
-                st.rerun()
-            else: st.error("❌ Sai mật khẩu!")
+# ==========================================
+# TAB 2: THỐNG KÊ & BIỂU ĐỒ (DASHBOARD)
+# ==========================================
+with tab2:
+    data = load_data()
+    if not data:
+        st.warning("Chưa có dữ liệu báo cáo nào được gửi về.")
     else:
-        if st.button("🚪 Đăng xuất"):
-            st.session_state["dang_nhap_co_so"] = False
-            st.rerun()
+        df = pd.DataFrame(data)
+        st.markdown("<h3 class='sub-header'>A. TỔNG HỢP TOÀN TỈNH</h3>", unsafe_allow_html=True)
+        
+        # Nút xuất PDF bằng JavaScript Print
+        st.markdown("""
+            <button onclick="window.print()" style="background-color:#004B87; color:white; padding:8px 15px; border:none; border-radius:5px; cursor:pointer; float:right; font-weight:bold;">
+                🖨️ In Báo Cáo / Lưu PDF
+            </button>
+            <div style="clear:both;"></div>
+        """, unsafe_allow_html=True)
+        
+        # Tính toán tổng
+        c1, c2, c3, c4 = st.columns(4)
+        c1.markdown(f"<div class='metric-card'><b>Tổng số tin bài:</b><br><h2 style='color:#C8102E;margin:0;'>{df['tt_tinbai'].sum()}</h2></div>", unsafe_allow_html=True)
+        c2.markdown(f"<div class='metric-card'><b>Tổ công nghệ số:</b><br><h2 style='color:#C8102E;margin:0;'>{df['kq_tocongnghe'].sum()}</h2></div>", unsafe_allow_html=True)
+        c3.markdown(f"<div class='metric-card'><b>Lớp cộng đồng (Xã/Phường):</b><br><h2 style='color:#C8102E;margin:0;'>{df['kq_lop_nd'].sum()}</h2></div>", unsafe_allow_html=True)
+        c4.markdown(f"<div class='metric-card'><b>Đơn vị đã nộp:</b><br><h2 style='color:#C8102E;margin:0;'>{len(df)}/{len(load_units())}</h2></div>", unsafe_allow_html=True)
 
-        with st.form("form_bao_cao", clear_on_submit=True):
-            st.markdown('<div class="section-header">📍 THÔNG TIN CHUNG</div>', unsafe_allow_html=True)
-            col1, col2 = st.columns(2)
-            with col1: voi_don_vi = st.selectbox("Tên đơn vị:", DANH_SACH_DON_VI)
-            with col2: voi_ky_bc = st.selectbox("Kỳ báo cáo:", ["Chọn kỳ..."] + [f"Tháng {i}" for i in range(1, 13)] + ["Quý I", "Quý II", "Quý III", "Quý IV", "6 tháng đầu năm", "6 tháng cuối năm", "Cả năm"])
+        st.markdown("<h3 class='sub-header'>B. BIỂU ĐỒ TỶ LỆ TRỌNG YẾU (%)</h3>", unsafe_allow_html=True)
+        
+        # Tính tỷ lệ % cho các chỉ tiêu
+        df['TL_ChiBo_CD'] = (df['kq_chibo_cd'] / df['kq_chibo_tong1'] * 100).round(2)
+        df['TL_ChiBo_ST'] = (df['kq_chibo_sotay'] / df['kq_chibo_tong2'] * 100).round(2)
+        df['TL_CB_AI'] = (df['kq_cb_ai'] / df['kq_cb_tong1'] * 100).round(2)
+        df['TL_ND_VNeID'] = (df['kq_nd_vneid'] / df['kq_nd_tong2'] * 100).round(2)
+        df['TL_ND_Smart'] = (df['kq_nd_smartphone'] / df['kq_nd_tong3'] * 100).round(2)
+
+        colA, colB = st.columns(2)
+        with colA:
+            fig1 = px.bar(df, x='don_vi', y=['TL_CB_AI', 'TL_ND_VNeID'], barmode='group', 
+                          labels={'value': 'Tỷ lệ (%)', 'variable': 'Chỉ tiêu', 'don_vi': 'Đơn vị'},
+                          title="Tỷ lệ CB biết dùng AI và ND phổ cập VNeID")
+            st.plotly_chart(fig1, use_container_width=True)
             
-            st.markdown('<div class="section-header">📊 SỐ LIỆU CHI TIẾT (7 NHÓM)</div>', unsafe_allow_html=True)
+        with colB:
+            fig2 = px.bar(df, x='don_vi', y=['TL_ChiBo_CD', 'TL_ChiBo_ST'], barmode='group',
+                          labels={'value': 'Tỷ lệ (%)', 'variable': 'Chỉ tiêu', 'don_vi': 'Đơn vị'},
+                          title="Tỷ lệ Chi bộ Sinh hoạt Chuyên đề & Dùng Sổ tay")
+            st.plotly_chart(fig2, use_container_width=True)
+            
+        st.markdown("<h3 class='sub-header'>C. BẢNG TỔNG HỢP CHI TIẾT & Ý KIẾN TỰ LUẬN</h3>", unsafe_allow_html=True)
+        st.dataframe(df.drop(columns=['tl_mohinh', 'tl_khokhan']), use_container_width=True)
+        
+        for index, row in df.iterrows():
+            with st.expander(f"📌 Xem Tự luận & Khó khăn của: {row['don_vi']}"):
+                st.write("**Mô hình/Cách làm hay:**", row['tl_mohinh'] if row['tl_mohinh'] else "Không có báo cáo.")
+                st.write("**Khó khăn/Vướng mắc chưa số hóa:**", row['tl_khokhan'] if row['tl_khokhan'] else "Không có báo cáo.")
 
-            # 1. Nhóm Lãnh đạo, chỉ đạo
-            with st.expander("1️⃣ NHÓM SỐ LIỆU VỀ CÔNG TÁC LÃNH ĐẠO, CHỈ ĐẠO", expanded=False):
-                c1, c2, c3 = st.columns(3)
-                g1_1 = c1.number_input("Số VB cấp ủy ban hành", min_value=0, step=1)
-                g1_2 = c2.number_input("Số VB tham mưu cấp trên", min_value=0, step=1)
-                g1_3 = c3.number_input("Số cuộc họp, hội nghị triển khai", min_value=0, step=1)
-
-            # 2. Nhóm Học tập, quán triệt
-            with st.expander("2️⃣ NHÓM SỐ LIỆU VỀ HỌC TẬP, QUÁN TRIỆT", expanded=False):
-                c1, c2 = st.columns(2)
-                g2_1 = c1.number_input("Số hội nghị tổ chức", min_value=0, step=1)
-                g2_2 = c2.number_input("Số người tham gia", min_value=0, step=1)
-                g2_3 = c1.number_input("Số văn bản đã quán triệt", min_value=0, step=1)
-                g2_4 = c2.number_input("Tỷ lệ đảng viên tham gia (%)", min_value=0.0, max_value=100.0, step=0.1)
-
-            # 3. Nhóm Tuyên truyền
-            with st.expander("3️⃣ NHÓM SỐ LIỆU VỀ TUYÊN TRUYỀN", expanded=False):
-                st.markdown("**3.1. Tuyên truyền chung**")
-                c1, c2 = st.columns(2)
-                g3_1 = c1.number_input("Số tin, bài, pano, khẩu hiệu", min_value=0, step=1)
-                g3_2 = c2.number_input("Số lượt phát loa truyền thanh", min_value=0, step=1)
-                st.markdown("**3.2. Tuyên truyền miệng & MXH**")
-                c3, c4 = st.columns(2)
-                g3_3 = c3.number_input("Số buổi tuyên truyền miệng", min_value=0, step=1)
-                g3_6 = c4.number_input("Số bài chia sẻ FB/Zalo", min_value=0, step=1)
-
-            # 4. Nhóm Dư luận xã hội
-            with st.expander("4️⃣ NHÓM SỐ LIỆU VỀ DƯ LUẬN XÃ HỘI", expanded=False):
-                c1, c2, c3 = st.columns(3)
-                g4_1 = c1.number_input("Số báo cáo DLXH gửi lên", min_value=0, step=1)
-                g4_2 = c2.number_input("Số vấn đề nổi cộm", min_value=0, step=1)
-                g4_3 = c3.number_input("Số vụ việc đã giải quyết", min_value=0, step=1)
-
-            # 5. Nhóm Khoa giáo, văn hóa
-            with st.expander("5️⃣ NHÓM SỐ LIỆU VỀ KHOA GIÁO, VH-VN", expanded=False):
-                c1, c2 = st.columns(2)
-                g5_1 = c1.number_input("Số hoạt động VH-VN tổ chức", min_value=0, step=1)
-                g5_2 = c2.number_input("Số lớp/buổi (GD, Y tế, Môi trường)", min_value=0, step=1)
-
-            # 6. Nhóm Dân vận
-            with st.expander("6️⃣ NHÓM SỐ LIỆU VỀ CÔNG TÁC DÂN VẬN", expanded=False):
-                c1, c2, c3 = st.columns(3)
-                g6_1 = c1.number_input("Số mô hình DVK đăng ký", min_value=0, step=1)
-                g6_2 = c2.number_input("Số mô hình HĐ hiệu quả", min_value=0, step=1)
-                g6_6 = c3.number_input("Số buổi tiếp xúc, đối thoại", min_value=0, step=1)
-
-            # 7. Nhóm Nhiệm vụ trọng tâm
-            with st.expander("7️⃣ NHÓM SỐ LIỆU NHIỆM VỤ TRỌNG TÂM", expanded=False):
-                c1, c2, c3 = st.columns(3)
-                g7_1 = c1.number_input("Số nhiệm vụ được giao", min_value=0, step=1)
-                g7_2 = c2.number_input("Số nhiệm vụ hoàn thành", min_value=0, step=1)
-                g7_3 = c3.number_input("Số nhiệm vụ đang làm", min_value=0, step=1)
-
-            st.write("---")
-            submitted = st.form_submit_button("🚀 GỬI BÁO CÁO LÊN BAN TỈNH ỦY", use_container_width=True)
-
-            if submitted:
-                if voi_don_vi == "Chọn đơn vị..." or voi_ky_bc == "Chọn kỳ...": st.error("⚠️ Vui lòng chọn Đơn vị và Kỳ báo cáo!")
-                else:
-                    du_lieu_chi_tiet = {
-                        "lanh_dao": {"vb_ban_hanh": g1_1, "vb_tham_muu": g1_2, "cuoc_hop": g1_3},
-                        "quan_triet": {"hoi_nghi": g2_1, "nguoi_tham_gia": g2_2, "vb_trien_khai": g2_3, "ty_le_dv": g2_4},
-                        "tuyen_truyen": {"tt_chung_tin_bai": g3_1, "tt_chung_loa": g3_2, "tt_mieng_buoi": g3_3, "mxh_chia_se": g3_6},
-                        "du_luan": {"bc_gui": g4_1, "vd_noi_com": g4_2, "vu_viec_xl": g4_3},
-                        "khoa_giao": {"hd_vhvn": g5_1, "lop_buoi": g5_2},
-                        "dan_van": {"dvk_dang_ky": g6_1, "dvk_hieu_qua": g6_2, "dv_doi_thoai": g6_6},
-                        "trong_tam": {"nv_giao": g7_1, "nv_hoan_thanh": g7_2, "nv_dang_lam": g7_3}
-                    }
-                    json_str = json.dumps(du_lieu_chi_tiet, ensure_ascii=False)
-                    
-                    with st.spinner("⏳ Đang đẩy dữ liệu vào máy chủ..."):
-                        try:
-                            supabase.table("bao_cao").insert({"don_vi": voi_don_vi, "ky_bao_cao": voi_ky_bc, "chi_tiet_so_lieu": json_str}).execute()
-                            st.success(f"✅ Báo cáo của {voi_don_vi} đã được nộp thành công!")
-                            st.balloons()
-                        except Exception as e: st.error(f"❌ Lỗi: {e}")
-
-# ==========================================================
-# 2. TRANG BẢNG ĐIỀU KHIỂN (LÃNH ĐẠO)
-# ==========================================================
-elif menu == "📊 Bảng Điều Khiển (Lãnh đạo)":
-    if "dang_nhap_lanh_dao" not in st.session_state: st.session_state["dang_nhap_lanh_dao"] = False
-    hien_thi_tieu_de("BẢNG ĐIỀU KHIỂN CHIẾN LƯỢC")
-
-    if not st.session_state["dang_nhap_lanh_dao"]:
-        mk_lanh_dao = st.text_input("Nhập mật khẩu Lãnh đạo:", type="password")
-        if st.button("🔑 Đăng nhập"):
-            if mk_lanh_dao == MAT_KHAU_LANH_DAO:
-                st.session_state["dang_nhap_lanh_dao"] = True; st.rerun()
-            else: st.error("❌ Mật khẩu không hợp lệ!")
-    else:
-        if st.button("🚪 Đăng xuất Lãnh đạo"):
-            st.session_state["dang_nhap_lanh_dao"] = False; st.rerun()
-
-        with st.spinner("Đang đồng bộ dữ liệu từ Tỉnh ủy..."):
-            try:
-                res = supabase.table("bao_cao").select("*").execute()
-                df_goc = pd.DataFrame(res.data)
-                
-                if not df_goc.empty:
-                    df_goc['vb_tham_muu'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('lanh_dao', {}).get('vb_tham_muu', 0))
-                    df_goc['hoi_nghi_qt'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('quan_triet', {}).get('hoi_nghi', 0))
-                    df_goc['ty_le_dv'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('quan_triet', {}).get('ty_le_dv', 0))
-                    df_goc['chia_se_mxh'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('tuyen_truyen', {}).get('mxh_chia_se', 0))
-                    df_goc['noi_com'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('du_luan', {}).get('vd_noi_com', 0))
-                    df_goc['dvk_hieu_qua'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('dan_van', {}).get('dvk_hieu_qua', 0))
-                    df_goc['nv_hoan_thanh'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('trong_tam', {}).get('nv_hoan_thanh', 0))
-                    df_goc['nv_giao'] = df_goc['chi_tiet_so_lieu'].apply(lambda x: x.get('trong_tam', {}).get('nv_giao', 0))
-
-                    st.markdown("### 🗓️ LỌC DỮ LIỆU THEO KỲ BÁO CÁO")
-                    ky_loc = st.selectbox("Chọn kỳ muốn xem:", ["Tất cả (Từ trước đến nay)"] + list(df_goc['ky_bao_cao'].unique()))
-                    
-                    df = df_goc if ky_loc == "Tất cả (Từ trước đến nay)" else df_goc[df_goc['ky_bao_cao'] == ky_loc]
-
-                    if len(df) == 0:
-                        st.warning("Chưa có báo cáo nào cho kỳ này.")
-                    else:
-                        m1, m2, m3 = st.columns(3)
-                        with m1: st.markdown(f'<div class="metric-box"><div class="metric-label">🏢 Số Báo cáo đã nộp</div><div class="metric-value">{len(df)}</div></div>', unsafe_allow_html=True)
-                        with m2: st.markdown(f'<div class="metric-box"><div class="metric-label">📜 VB Tham mưu Cấp trên</div><div class="metric-value">{int(df["vb_tham_muu"].sum())}</div></div>', unsafe_allow_html=True)
-                        with m3: st.markdown(f'<div class="metric-box"><div class="metric-label">🤝 Mô hình Dân vận Khéo HQ</div><div class="metric-value">{int(df["dvk_hieu_qua"].sum())}</div></div>', unsafe_allow_html=True)
-                        
-                        m4, m5, m6 = st.columns(3)
-                        with m4: st.markdown(f'<div class="metric-box"><div class="metric-label">⚠️ Vấn đề nổi cộm phát hiện</div><div class="metric-value">{int(df["noi_com"].sum())}</div></div>', unsafe_allow_html=True)
-                        with m5: st.markdown(f'<div class="metric-box"><div class="metric-label">📈 Tỷ lệ Đảng viên học tập (TB)</div><div class="metric-value">{df["ty_le_dv"].mean():.1f}%</div></div>', unsafe_allow_html=True)
-                        with m6: st.markdown(f'<div class="metric-box"><div class="metric-label">🎯 NV Trọng tâm đã Hoàn thành</div><div class="metric-value">{int(df["nv_hoan_thanh"].sum())}</div></div>', unsafe_allow_html=True)
-                        
-                        st.write("---")
-                        
-                        c_chart1, c_chart2 = st.columns(2)
-                        with c_chart1:
-                            st.markdown("#### 📱 Lượt chia sẻ Tuyên truyền trên MXH")
-                            df_mxh = df.groupby("don_vi")["chia_se_mxh"].sum().reset_index()
-                            st.bar_chart(df_mxh.set_index("don_vi"))
-                            
-                        with c_chart2:
-                            st.markdown("#### 🎯 Tỷ lệ giải quyết Nhiệm vụ trọng tâm")
-                            tong_giao = df["nv_giao"].sum()
-                            tong_xong = df["nv_hoan_thanh"].sum()
-                            df_nv = pd.DataFrame({"Trạng thái": ["Đã hoàn thành", "Đang/Chưa thực hiện"], "Số lượng": [tong_xong, max(0, tong_giao - tong_xong)]})
-                            st.bar_chart(df_nv.set_index("Trạng thái"))
-
-                        st.write("---")
-                        st.markdown("#### 📑 Danh sách Đơn vị nộp báo cáo")
-                        st.dataframe(df[['created_at', 'don_vi', 'ky_bao_cao']].rename(columns={'created_at': 'Thời gian nộp', 'don_vi': 'Tên Đơn vị', 'ky_bao_cao': 'Kỳ'}))
-                else:
-                    st.info("Chưa có dữ liệu báo cáo nào trong hệ thống.")
-            except Exception as e:
-                st.error(f"Lỗi tải dữ liệu: {e}")
+# ==========================================
+# TAB 3: QUẢN TRỊ ADMIN
+# ==========================================
+with tab3:
+    pass_input = st.text_input("🔑 Nhập mật khẩu quản trị:", type="password")
+    if pass_input == ADMIN_PASSWORD:
+        st.success("Mở khóa quyền Admin thành công!")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("### 🏢 Quản lý Đơn vị")
+            current_units = load_units()
+            new_unit = st.text_input("Thêm đơn vị mới:")
+            if st.button("➕ Thêm"):
+                if new_unit and new_unit not in current_units:
+                    current_units.append(new_unit)
+                    save_units(current_units)
+                    st.success(f"Đã thêm: {new_unit}")
+                    st.rerun()
+            
+            remove_unit = st.selectbox("Xóa đơn vị:", ["-- Chọn --"] + current_units)
+            if st.button("🗑️ Xóa"):
+                if remove_unit != "-- Chọn --":
+                    current_units.remove(remove_unit)
+                    save_units(current_units)
+                    st.success(f"Đã xóa: {remove_unit}")
+                    st.rerun()
+        
+        with c2:
+            st.markdown("### 🛠️ Chỉnh sửa Số liệu Data")
+            data_to_edit = load_data()
+            if data_to_edit:
+                selected_dv_edit = st.selectbox("Chọn báo cáo đơn vị cần xóa:", [d['don_vi'] for d in data_to_edit])
+                if st.button("⚠️ Xóa Báo Cáo Này"):
+                    data_to_edit = [d for d in data_to_edit if d['don_vi'] != selected_dv_edit]
+                    save_data(data_to_edit)
+                    st.success("Đã xóa báo cáo thành công!")
+                    st.rerun()
+            else:
+                st.info("Chưa có báo cáo nào để quản lý.")
+    elif pass_input != "":
+        st.error("Mật khẩu không chính xác!")
