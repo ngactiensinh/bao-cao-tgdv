@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import io
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
+from openpyxl.chart import BarChart, PieChart, Reference
 
 st.set_page_config(page_title="Hệ thống Báo cáo TGDV", page_icon="📊", layout="wide")
 
@@ -25,7 +26,6 @@ DEFAULT_UNITS = [
 
 DANH_SACH_THANG = [f"Tháng {i}" for i in range(1, 13)]
 
-# TỪ ĐIỂN MAP EXACTLY 48 COLUMNS
 DICT_DICH_THUAT = {
     "don_vi": "Đơn vị báo cáo", "nguoi_bao_cao": "Người BC / SĐT", "ky_bao_cao": "Tháng báo cáo",
     "ld_vanban": "Số VB cấp ủy ban hành", "ld_thammuu": "Số VB tham mưu cấp trên", "ld_cuochop": "Số cuộc họp, hội nghị",
@@ -267,7 +267,6 @@ if st.session_state.role == "admin":
         if not data: st.warning("Chưa có số liệu.")
         else:
             df_raw = pd.DataFrame(data)
-            
             for col in DICT_DICH_THUAT.keys():
                 if col not in df_raw.columns:
                     df_raw[col] = 0 if col not in ['don_vi', 'nguoi_bao_cao', 'ky_bao_cao', 'nv_ketqua', 'tl_mohinh', 'tl_khokhan'] else ""
@@ -285,15 +284,15 @@ if st.session_state.role == "admin":
             if df.empty: st.warning("Không có số liệu cho kỳ này.")
             else:
                 # ===============================================
-                # XUẤT EXCEL: ĐÃ FIX LỖI OPENPYXL
+                # XUẤT EXCEL: BẢNG DỮ LIỆU + SHEET BIỂU ĐỒ
                 # ===============================================
                 df_export = df[list(DICT_DICH_THUAT.keys())].rename(columns=DICT_DICH_THUAT)
                 buffer = io.BytesIO()
                 
                 with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                    # ---- SHEET 1: BẢNG DỮ LIỆU ----
                     df_export.to_excel(writer, index=False, sheet_name='Bao_Cao', startrow=1)
                     worksheet = writer.sheets['Bao_Cao']
-                    
                     thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
                     
                     super_headers = [
@@ -308,7 +307,6 @@ if st.session_state.role == "admin":
                         (33, 46, "8. BÌNH DÂN HỌC VỤ SỐ", "004B87"),
                         (47, 48, "9. ĐÁNH GIÁ CHUNG", "C8102E")
                     ]
-                    
                     for start_col, end_col, title, color in super_headers:
                         worksheet.merge_cells(start_row=1, start_column=start_col, end_row=1, end_column=end_col)
                         cell = worksheet.cell(row=1, column=start_col)
@@ -326,7 +324,6 @@ if st.session_state.role == "admin":
                         cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
                         cell.border = thin_border
                         
-                    # FIX LỖI TẠI ĐÂY: SỬ DỤNG get_column_letter THAY VÌ col[0].column_letter
                     for i, col in enumerate(worksheet.columns, 1):
                         max_length = 0
                         column_letter = get_column_letter(i)
@@ -336,14 +333,82 @@ if st.session_state.role == "admin":
                             except: pass
                             cell.border = thin_border
                         worksheet.column_dimensions[column_letter].width = min(max(max_length + 2, 12), 40)
-                        
                     worksheet.row_dimensions[1].height = 25
                     worksheet.row_dimensions[2].height = 35
+
+                    # ---- SHEET 2: BIỂU ĐỒ TỔNG HỢP ----
+                    ws_charts = writer.book.create_sheet(title="Biểu_Đồ_Tổng_Hợp")
+                    
+                    # 1. Bảng số liệu Trọng tâm
+                    ws_charts['B2'] = "CHỈ TIÊU TRỌNG TÂM"
+                    ws_charts['C2'] = "SỐ LƯỢNG"
+                    ws_charts['B3'] = "VB Lãnh đạo, chỉ đạo"
+                    ws_charts['C3'] = int(df['ld_vanban'].sum())
+                    ws_charts['B4'] = "Mô hình Dân vận khéo"
+                    ws_charts['C4'] = int(df['dv_mh_hieuqua'].sum())
+                    ws_charts['B5'] = "Tổ Công nghệ số"
+                    ws_charts['C5'] = int(df['kq_tocongnghe'].sum())
+                    ws_charts['B6'] = "Sự việc DLXH đã xử lý"
+                    ws_charts['C6'] = int(df['dl_xuly'].sum())
+
+                    for row in range(2, 7):
+                        for col in range(2, 4):
+                            cell = ws_charts.cell(row=row, column=col)
+                            cell.border = thin_border
+                            if row == 2:
+                                cell.fill = PatternFill(start_color="004B87", end_color="004B87", fill_type="solid")
+                                cell.font = Font(bold=True, color="FFFFFF")
+
+                    # Vẽ Biểu đồ Cột
+                    bar_chart = BarChart()
+                    bar_chart.type = "col"
+                    bar_chart.style = 10
+                    bar_chart.title = "BIỂU ĐỒ CHỈ TIÊU TRỌNG TÂM"
+                    bar_chart.y_axis.title = "Số lượng"
+                    data_bar = Reference(ws_charts, min_col=3, min_row=2, max_row=6)
+                    cats_bar = Reference(ws_charts, min_col=2, min_row=3, max_row=6)
+                    bar_chart.add_data(data_bar, titles_from_data=True)
+                    bar_chart.set_categories(cats_bar)
+                    bar_chart.width = 16
+                    bar_chart.height = 9
+                    ws_charts.add_chart(bar_chart, "E2")
+
+                    # 2. Bảng số liệu Dư luận xã hội
+                    ws_charts['B10'] = "CƠ CẤU DƯ LUẬN XÃ HỘI"
+                    ws_charts['C10'] = "SỐ LƯỢNG"
+                    ws_charts['B11'] = "BC Dư luận gửi đi"
+                    ws_charts['C11'] = int(df['dl_baocao'].sum())
+                    ws_charts['B12'] = "Vấn đề nổi cộm"
+                    ws_charts['C12'] = int(df['dl_vande'].sum())
+                    ws_charts['B13'] = "Vụ việc đã xử lý"
+                    ws_charts['C13'] = int(df['dl_xuly'].sum())
+
+                    for row in range(10, 14):
+                        for col in range(2, 4):
+                            cell = ws_charts.cell(row=row, column=col)
+                            cell.border = thin_border
+                            if row == 10:
+                                cell.fill = PatternFill(start_color="C8102E", end_color="C8102E", fill_type="solid")
+                                cell.font = Font(bold=True, color="FFFFFF")
+
+                    # Vẽ Biểu đồ Tròn
+                    pie_chart = PieChart()
+                    pie_chart.title = "CƠ CẤU DƯ LUẬN XÃ HỘI"
+                    data_pie = Reference(ws_charts, min_col=3, min_row=10, max_row=13)
+                    cats_pie = Reference(ws_charts, min_col=2, min_row=11, max_row=13)
+                    pie_chart.add_data(data_pie, titles_from_data=True)
+                    pie_chart.set_categories(cats_pie)
+                    pie_chart.width = 14
+                    pie_chart.height = 9
+                    ws_charts.add_chart(pie_chart, "E12")
+
+                    ws_charts.column_dimensions['B'].width = 25
+                    ws_charts.column_dimensions['C'].width = 15
                 
                 col_btn1, col_btn2 = st.columns([2, 1.5])
                 with col_btn2:
                     st.download_button(
-                        label="📥 TẢI BẢNG TỔNG HỢP (EXCEL SIÊU NÉT - 9 KHỐI)",
+                        label="📥 TẢI BẢNG TỔNG HỢP (KÈM BIỂU ĐỒ EXCEL)",
                         data=buffer.getvalue(),
                         file_name=f"Bao_Cao_TGDV_{loai_bc}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -355,7 +420,6 @@ if st.session_state.role == "admin":
                 df_sum = df.groupby('don_vi')[num_cols].sum().reset_index()
                 
                 st.markdown("<hr>", unsafe_allow_html=True)
-                
                 c1, c2, c3, c4 = st.columns(4)
                 c1.markdown(f"<div class='metric-card'><p class='metric-title'>VB Chỉ đạo</p><p class='metric-number'>{df_sum['ld_vanban'].sum()}</p></div>", unsafe_allow_html=True)
                 c2.markdown(f"<div class='metric-card'><p class='metric-title'>Mô hình Dân vận Khéo</p><p class='metric-number'>{df_sum['dv_mh_hieuqua'].sum()}</p></div>", unsafe_allow_html=True)
