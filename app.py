@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import io
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 
 st.set_page_config(page_title="Hệ thống Báo cáo TGDV", page_icon="📊", layout="wide")
 
@@ -24,7 +25,7 @@ DEFAULT_UNITS = [
 
 DANH_SACH_THANG = [f"Tháng {i}" for i in range(1, 13)]
 
-# TỪ ĐIỂN MAP EXACTLY 48 COLUMNS 
+# TỪ ĐIỂN MAP EXACTLY 48 COLUMNS
 DICT_DICH_THUAT = {
     "don_vi": "Đơn vị báo cáo", "nguoi_bao_cao": "Người BC / SĐT", "ky_bao_cao": "Tháng báo cáo",
     "ld_vanban": "Số VB cấp ủy ban hành", "ld_thammuu": "Số VB tham mưu cấp trên", "ld_cuochop": "Số cuộc họp, hội nghị",
@@ -133,7 +134,7 @@ else:
     tab_nhap = tabs[0]
 
 # ==========================================
-# TAB NHẬP BÁO CÁO (CHUẨN HÓA CÁC TRƯỜNG)
+# TAB NHẬP BÁO CÁO
 # ==========================================
 with tab_nhap:
     with st.form("form_bao_cao"):
@@ -258,7 +259,7 @@ with tab_nhap:
                 st.success(f"✅ Báo cáo {don_vi} - {ky_bao_cao} đã được ghi nhận thành công!")
 
 # ==========================================
-# TAB ADMIN - DASHBOARD & XUẤT EXCEL (48 CỘT CHUẨN)
+# TAB ADMIN - DASHBOARD & XUẤT EXCEL
 # ==========================================
 if st.session_state.role == "admin":
     with tab_bieudo:
@@ -267,7 +268,6 @@ if st.session_state.role == "admin":
         else:
             df_raw = pd.DataFrame(data)
             
-            # Xử lý làm sạch dữ liệu cũ bị thiếu cột để tránh lỗi
             for col in DICT_DICH_THUAT.keys():
                 if col not in df_raw.columns:
                     df_raw[col] = 0 if col not in ['don_vi', 'nguoi_bao_cao', 'ky_bao_cao', 'nv_ketqua', 'tl_mohinh', 'tl_khokhan'] else ""
@@ -285,7 +285,7 @@ if st.session_state.role == "admin":
             if df.empty: st.warning("Không có số liệu cho kỳ này.")
             else:
                 # ===============================================
-                # XUẤT EXCEL: TẠO 9 KHỐI TIÊU ĐỀ ĐA CẤP (SUPER HEADERS)
+                # XUẤT EXCEL: ĐÃ FIX LỖI OPENPYXL
                 # ===============================================
                 df_export = df[list(DICT_DICH_THUAT.keys())].rename(columns=DICT_DICH_THUAT)
                 buffer = io.BytesIO()
@@ -296,7 +296,6 @@ if st.session_state.role == "admin":
                     
                     thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
                     
-                    # CẤU TRÚC 9 KHỐI (48 CỘT)
                     super_headers = [
                         (1, 3, "THÔNG TIN CHUNG", "004B87"),
                         (4, 6, "1. LÃNH ĐẠO, CHỈ ĐẠO", "C8102E"),
@@ -327,15 +326,16 @@ if st.session_state.role == "admin":
                         cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
                         cell.border = thin_border
                         
-                    for col in worksheet.columns:
+                    # FIX LỖI TẠI ĐÂY: SỬ DỤNG get_column_letter THAY VÌ col[0].column_letter
+                    for i, col in enumerate(worksheet.columns, 1):
                         max_length = 0
-                        column = col[0].column_letter
+                        column_letter = get_column_letter(i)
                         for cell in col:
                             try:
                                 if len(str(cell.value)) > max_length: max_length = len(str(cell.value))
                             except: pass
                             cell.border = thin_border
-                        worksheet.column_dimensions[column].width = min(max(max_length + 2, 12), 40)
+                        worksheet.column_dimensions[column_letter].width = min(max(max_length + 2, 12), 40)
                         
                     worksheet.row_dimensions[1].height = 25
                     worksheet.row_dimensions[2].height = 35
