@@ -4,6 +4,7 @@ import json
 import os
 import plotly.express as px
 import plotly.graph_objects as go
+import io
 
 st.set_page_config(page_title="Hệ thống Báo cáo TGDV", page_icon="📊", layout="wide")
 
@@ -239,20 +240,24 @@ if st.session_state.role == "admin":
 
             if df.empty: st.warning("Không có số liệu cho kỳ này.")
             else:
-                # Nút tải file Excel/CSV tổng thể
-                csv_data = df.to_csv(index=False).encode('utf-8-sig')
+                # ===============================================
+                # TÍNH NĂNG XUẤT FILE EXCEL (.XLSX) CHUYÊN NGHIỆP
+                # ===============================================
+                buffer = io.BytesIO()
+                with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                    df.to_excel(writer, index=False, sheet_name=f'Bao_Cao_{loai_bc}')
                 
-                # Căn lề nút tải sang phải cho đẹp
-                col_btn1, col_btn2 = st.columns([2, 1])
+                col_btn1, col_btn2 = st.columns([2, 1.5])
                 with col_btn2:
                     st.download_button(
-                        label="📥 TẢI XUỐNG BẢNG BÁO CÁO TỔNG THỂ (FILE EXCEL/CSV)",
-                        data=csv_data,
-                        file_name=f"Bao_Cao_TGDV_{loai_bc}.csv",
-                        mime="text/csv",
+                        label="📥 TẢI XUỐNG BẢNG BÁO CÁO (FILE EXCEL .XLSX)",
+                        data=buffer.getvalue(),
+                        file_name=f"Bao_Cao_TGDV_{loai_bc}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         type="primary",
                         use_container_width=True
                     )
+                # ===============================================
 
                 num_cols = df.select_dtypes(include='number').columns
                 df_sum = df.groupby('don_vi')[num_cols].sum().reset_index()
