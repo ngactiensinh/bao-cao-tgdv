@@ -5,6 +5,7 @@ import os
 import plotly.express as px
 import plotly.graph_objects as go
 import io
+from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 
 st.set_page_config(page_title="Hệ thống Báo cáo TGDV", page_icon="📊", layout="wide")
 
@@ -22,6 +23,25 @@ DEFAULT_UNITS = [
 ]
 
 DANH_SACH_THANG = [f"Tháng {i}" for i in range(1, 13)]
+
+# TỪ ĐIỂN DỊCH THUẬT TIÊU ĐỀ EXCEL
+DICT_DICH_THUAT = {
+    "don_vi": "Đơn vị báo cáo", "ky_bao_cao": "Kỳ báo cáo", "nguoi_bao_cao": "Người báo cáo / SĐT",
+    "ld_vanban": "Số VB cấp ủy ban hành", "ld_thammuu": "Số VB tham mưu cấp trên", "ld_cuochop": "Số cuộc họp, hội nghị",
+    "nq_hoinghi": "Số hội nghị NQ", "nq_nguoi": "Số người tham gia NQ", "nq_vanban": "Số VB đã triển khai", "nq_tyle": "Tỷ lệ ĐV tham gia (%)",
+    "tt_tinbai": "Số tin, bài, pano", "tt_loa": "Số lượt loa truyền thanh", "tt_buoi": "Số buổi TT miệng",
+    "tt_mxh_bai": "Số bài trên MXH/Cổng TT", "tt_mxh_tuongtac": "Lượt tương tác MXH",
+    "dl_baocao": "Số BC dư luận gửi đi", "dl_vande": "Số vấn đề nổi cộm", "dl_xuly": "Số vụ việc đã xử lý",
+    "kg_hoatdong": "Số HĐ Văn hóa-Văn nghệ", "kg_chuongtrinh": "Số CT tuyên truyền GD", "kg_lop": "Số buổi Y tế/Môi trường",
+    "dv_mh_dangky": "Mô hình DVK đăng ký", "dv_mh_hieuqua": "Mô hình DVK hiệu quả", "dv_tiepxuc": "Số buổi đối thoại Nhân dân",
+    "nv_duocgiao": "Nhiệm vụ trọng tâm giao", "nv_hoanthanh": "Nhiệm vụ TT hoàn thành", "nv_ketqua": "Kết quả thí điểm nổi bật",
+    "bd_tinbai": "Số tin bài CĐS", "bd_cuocthi": "Số cuộc thi CĐS", "kq_tocongnghe": "Số Tổ công nghệ số",
+    "ts_chibo": "Tổng số Chi bộ", "kq_chibo_cd": "Số CB SH chuyên đề", "kq_chibo_sotay": "Số CB dùng Sổ tay ĐV",
+    "ts_cbccvc": "Tổng số CBCCVC", "kq_cb_ai": "Số CB biết dùng AI", "kq_cb_khoahoc": "Số CB học xong CĐS",
+    "ts_nd_truongthanh": "Tổng ND trưởng thành", "kq_nd_kynang": "Số ND có Kỹ năng số", "kq_nd_vneid": "Số ND phổ cập VNeID",
+    "kq_nd_smartphone": "Số ND dùng Smartphone", "kq_lop_nd": "Số buổi học cộng đồng",
+    "tl_mohinh": "Mô hình hay, sáng tạo", "tl_khokhan": "Khó khăn, vướng mắc"
+}
 
 def load_data():
     if os.path.exists(DATA_FILE):
@@ -63,6 +83,14 @@ st.markdown("""
     .metric-card {background-color: #ffffff; padding: 20px; border-radius: 10px; border-top: 4px solid #C8102E; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center;}
     .metric-title {font-size: 14px; color: #004B87; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;}
     .metric-number {font-size: 28px; color: #C8102E; font-weight: 900; margin: 0;}
+    
+    @media print {
+        .stButton, .stSidebar, [data-testid="stHeader"], footer, .hide-on-print { display: none !important; }
+        .stApp { background-color: white !important; }
+        [data-testid="stExpander"] { border: 1px solid #004B87 !important; }
+        .main-header { color: #004B87 !important; }
+        .metric-card { border: 1px solid #C8102E !important; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -240,24 +268,58 @@ if st.session_state.role == "admin":
 
             if df.empty: st.warning("Không có số liệu cho kỳ này.")
             else:
-                # ===============================================
-                # TÍNH NĂNG XUẤT FILE EXCEL (.XLSX) CHUYÊN NGHIỆP
-                # ===============================================
+                # TÍNH NĂNG XUẤT FILE EXCEL (.XLSX) CÓ ĐỊNH DẠNG TỰ ĐỘNG
+                df_export = df.rename(columns=DICT_DICH_THUAT)
                 buffer = io.BytesIO()
+                
                 with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-                    df.to_excel(writer, index=False, sheet_name=f'Bao_Cao_{loai_bc}')
+                    df_export.to_excel(writer, index=False, sheet_name=f'Bao_Cao')
+                    worksheet = writer.sheets['Bao_Cao']
+                    
+                    # Cấu hình màu nền Xanh Navy và Chữ Trắng cho Dòng Tiêu đề
+                    header_fill = PatternFill(start_color="004B87", end_color="004B87", fill_type="solid")
+                    header_font = Font(bold=True, color="FFFFFF")
+                    thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+                    
+                    for cell in worksheet[1]:
+                        cell.fill = header_fill
+                        cell.font = header_font
+                        cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+                        cell.border = thin_border
+                        
+                    # Auto-fit độ rộng cột dựa trên độ dài dữ liệu
+                    for col in worksheet.columns:
+                        max_length = 0
+                        column = col[0].column_letter # Get the column name
+                        for cell in col:
+                            try:
+                                if len(str(cell.value)) > max_length:
+                                    max_length = len(str(cell.value))
+                            except:
+                                pass
+                            cell.border = thin_border
+                        adjusted_width = (max_length + 3)
+                        # Giới hạn độ rộng tối đa là 45 để chữ đoạn văn không bị kéo dài vô tận
+                        worksheet.column_dimensions[column].width = min(adjusted_width, 45) 
                 
                 col_btn1, col_btn2 = st.columns([2, 1.5])
                 with col_btn2:
                     st.download_button(
-                        label="📥 TẢI XUỐNG BẢNG BÁO CÁO (FILE EXCEL .XLSX)",
+                        label="📥 TẢI BẢNG TỔNG HỢP (EXCEL SIÊU NÉT)",
                         data=buffer.getvalue(),
                         file_name=f"Bao_Cao_TGDV_{loai_bc}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         type="primary",
                         use_container_width=True
                     )
-                # ===============================================
+
+                # Nút Print bằng JS bọc trong thẻ HTML cực đẹp và an toàn
+                st.markdown("""
+                <div class="hide-on-print" style="margin-bottom: 20px; text-align: right;">
+                    <button onclick='window.parent.print()' style='background-color: #004B87; color: white; padding: 10px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 14px;'>🖨️ XUẤT BÁO CÁO PDF (IN)</button>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px; font-style: italic;">(Hoặc ấn phím Ctrl + P / Cmd + P)</div>
+                </div>
+                """, unsafe_allow_html=True)
 
                 num_cols = df.select_dtypes(include='number').columns
                 df_sum = df.groupby('don_vi')[num_cols].sum().reset_index()
@@ -301,6 +363,10 @@ if st.session_state.role == "admin":
                                   color_discrete_sequence=['#004B87', '#C8102E', '#E6E6E6'])
                     fig4.update_layout(template="plotly_white", paper_bgcolor='rgba(0,0,0,0)')
                     st.plotly_chart(fig4, use_container_width=True)
+
+                st.markdown("<h3 class='main-header' style='text-align:left; font-size:20px;'>📋 BẢNG DỮ LIỆU TỔNG HỢP TRỰC TUYẾN</h3>", unsafe_allow_html=True)
+                # Dịch tạm bảng hiển thị trên web
+                st.dataframe(df_sum, use_container_width=True)
 
     with tab_admin:
         st.markdown("<h3 style='color:#C8102E;'>⚠️ KHU VỰC QUẢN TRỊ DỮ LIỆU</h3>", unsafe_allow_html=True)
