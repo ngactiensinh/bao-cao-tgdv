@@ -229,7 +229,7 @@ with tab_nhap:
 
         with st.expander("9. ĐÁNH GIÁ CHUNG & KHÓ KHĂN", expanded=False):
             tl_mohinh = st.text_area("Nêu các mô hình, cách làm sáng tạo hiệu quả:")
-            tl_khokhan = st.text_area("Các khó khăn, vướng mắc trong việc số hóa tài liệu:")
+            tl_khokhan = st.text_area("Các khó khăn, vướng mắc:")
 
         st.markdown("<style>.stButton>button[kind='primary'] {background-color: #C8102E; border:none;}</style>", unsafe_allow_html=True)
         if st.form_submit_button("🚀 GỬI / CẬP NHẬT BÁO CÁO LÊN BAN TỈNH ỦY", type="primary", use_container_width=True):
