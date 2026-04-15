@@ -7,7 +7,6 @@ import plotly.graph_objects as go
 import io
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
-from openpyxl.chart import BarChart, PieChart, Reference
 
 st.set_page_config(page_title="Hệ thống Báo cáo TGDV", page_icon="📊", layout="wide")
 
@@ -83,11 +82,10 @@ st.markdown("""
     .metric-card {background-color: #ffffff; padding: 20px; border-radius: 10px; border-top: 4px solid #C8102E; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center;}
     .metric-title {font-size: 14px; color: #004B87; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;}
     .metric-number {font-size: 28px; color: #C8102E; font-weight: 900; margin: 0;}
+    .section-title {color: #004B87; border-bottom: 3px solid #C8102E; padding-bottom: 5px; margin-top: 30px; margin-bottom: 20px; font-weight: bold; font-size: 20px;}
     @media print {
         .stButton, .stSidebar, [data-testid="stHeader"], footer, .hide-on-print { display: none !important; }
         .stApp { background-color: white !important; }
-        [data-testid="stExpander"] { border: 1px solid #004B87 !important; }
-        .main-header { color: #004B87 !important; }
         .metric-card { border: 1px solid #C8102E !important; }
     }
 </style>
@@ -259,7 +257,7 @@ with tab_nhap:
                 st.success(f"✅ Báo cáo {don_vi} - {ky_bao_cao} đã được ghi nhận thành công!")
 
 # ==========================================
-# TAB ADMIN - DASHBOARD & XUẤT EXCEL
+# TAB ADMIN - DASHBOARD 8 BIỂU ĐỒ TOÀN CẢNH
 # ==========================================
 if st.session_state.role == "admin":
     with tab_bieudo:
@@ -271,7 +269,7 @@ if st.session_state.role == "admin":
                 if col not in df_raw.columns:
                     df_raw[col] = 0 if col not in ['don_vi', 'nguoi_bao_cao', 'ky_bao_cao', 'nv_ketqua', 'tl_mohinh', 'tl_khokhan'] else ""
                     
-            st.markdown("<h3 style='color:#004B87;'>🗓️ BỘ LỌC TỔNG HỢP</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='color:#004B87;'>🗓️ BỘ LỌC TỔNG HỢP (XEM TOÀN CẢNH)</h3>", unsafe_allow_html=True)
             c_f1, c_f2 = st.columns(2)
             loai_bc = c_f1.selectbox("Chọn kỳ tổng hợp:", ["Tháng", "Quý I", "Quý II", "Quý III", "Quý IV", "6 Tháng Đầu Năm", "6 Tháng Cuối Năm", "9 Tháng", "Cả Năm"])
             if loai_bc == "Tháng":
@@ -283,29 +281,20 @@ if st.session_state.role == "admin":
 
             if df.empty: st.warning("Không có số liệu cho kỳ này.")
             else:
-                # ===============================================
-                # XUẤT EXCEL: BẢNG DỮ LIỆU + SHEET BIỂU ĐỒ
-                # ===============================================
+                # ---------------- TẢI EXCEL TỔNG ----------------
                 df_export = df[list(DICT_DICH_THUAT.keys())].rename(columns=DICT_DICH_THUAT)
                 buffer = io.BytesIO()
-                
                 with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-                    # ---- SHEET 1: BẢNG DỮ LIỆU ----
                     df_export.to_excel(writer, index=False, sheet_name='Bao_Cao', startrow=1)
                     worksheet = writer.sheets['Bao_Cao']
                     thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
                     
                     super_headers = [
-                        (1, 3, "THÔNG TIN CHUNG", "004B87"),
-                        (4, 6, "1. LÃNH ĐẠO, CHỈ ĐẠO", "C8102E"),
-                        (7, 10, "2. QUÁN TRIỆT NGHỊ QUYẾT", "004B87"),
-                        (11, 16, "3. CÔNG TÁC TUYÊN TRUYỀN", "C8102E"),
-                        (17, 19, "4. DƯ LUẬN XÃ HỘI", "004B87"),
-                        (20, 22, "5. KHOA GIÁO, VH-VN", "C8102E"),
-                        (23, 28, "6. CÔNG TÁC DÂN VẬN", "004B87"),
-                        (29, 32, "7. NHIỆM VỤ TRỌNG TÂM", "C8102E"),
-                        (33, 46, "8. BÌNH DÂN HỌC VỤ SỐ", "004B87"),
-                        (47, 48, "9. ĐÁNH GIÁ CHUNG", "C8102E")
+                        (1, 3, "THÔNG TIN CHUNG", "004B87"), (4, 6, "1. LÃNH ĐẠO, CHỈ ĐẠO", "C8102E"),
+                        (7, 10, "2. QUÁN TRIỆT NGHỊ QUYẾT", "004B87"), (11, 16, "3. CÔNG TÁC TUYÊN TRUYỀN", "C8102E"),
+                        (17, 19, "4. DƯ LUẬN XÃ HỘI", "004B87"), (20, 22, "5. KHOA GIÁO, VH-VN", "C8102E"),
+                        (23, 28, "6. CÔNG TÁC DÂN VẬN", "004B87"), (29, 32, "7. NHIỆM VỤ TRỌNG TÂM", "C8102E"),
+                        (33, 46, "8. BÌNH DÂN HỌC VỤ SỐ", "004B87"), (47, 48, "9. ĐÁNH GIÁ CHUNG", "C8102E")
                     ]
                     for start_col, end_col, title, color in super_headers:
                         worksheet.merge_cells(start_row=1, start_column=start_col, end_row=1, end_column=end_col)
@@ -314,8 +303,7 @@ if st.session_state.role == "admin":
                         cell.fill = PatternFill(start_color=color, end_color=color, fill_type="solid")
                         cell.font = Font(bold=True, color="FFFFFF", size=12)
                         cell.alignment = Alignment(horizontal='center', vertical='center')
-                        for col in range(start_col, end_col + 1):
-                            worksheet.cell(row=1, column=col).border = thin_border
+                        for col in range(start_col, end_col + 1): worksheet.cell(row=1, column=col).border = thin_border
                     
                     for col_num, col_name in enumerate(df_export.columns, 1):
                         cell = worksheet.cell(row=2, column=col_num)
@@ -333,128 +321,104 @@ if st.session_state.role == "admin":
                             except: pass
                             cell.border = thin_border
                         worksheet.column_dimensions[column_letter].width = min(max(max_length + 2, 12), 40)
+                        
                     worksheet.row_dimensions[1].height = 25
                     worksheet.row_dimensions[2].height = 35
-
-                    # ---- SHEET 2: BIỂU ĐỒ TỔNG HỢP ----
-                    ws_charts = writer.book.create_sheet(title="Biểu_Đồ_Tổng_Hợp")
-                    
-                    # 1. Bảng số liệu Trọng tâm
-                    ws_charts['B2'] = "CHỈ TIÊU TRỌNG TÂM"
-                    ws_charts['C2'] = "SỐ LƯỢNG"
-                    ws_charts['B3'] = "VB Lãnh đạo, chỉ đạo"
-                    ws_charts['C3'] = int(df['ld_vanban'].sum())
-                    ws_charts['B4'] = "Mô hình Dân vận khéo"
-                    ws_charts['C4'] = int(df['dv_mh_hieuqua'].sum())
-                    ws_charts['B5'] = "Tổ Công nghệ số"
-                    ws_charts['C5'] = int(df['kq_tocongnghe'].sum())
-                    ws_charts['B6'] = "Sự việc DLXH đã xử lý"
-                    ws_charts['C6'] = int(df['dl_xuly'].sum())
-
-                    for row in range(2, 7):
-                        for col in range(2, 4):
-                            cell = ws_charts.cell(row=row, column=col)
-                            cell.border = thin_border
-                            if row == 2:
-                                cell.fill = PatternFill(start_color="004B87", end_color="004B87", fill_type="solid")
-                                cell.font = Font(bold=True, color="FFFFFF")
-
-                    # Vẽ Biểu đồ Cột
-                    bar_chart = BarChart()
-                    bar_chart.type = "col"
-                    bar_chart.style = 10
-                    bar_chart.title = "BIỂU ĐỒ CHỈ TIÊU TRỌNG TÂM"
-                    bar_chart.y_axis.title = "Số lượng"
-                    data_bar = Reference(ws_charts, min_col=3, min_row=2, max_row=6)
-                    cats_bar = Reference(ws_charts, min_col=2, min_row=3, max_row=6)
-                    bar_chart.add_data(data_bar, titles_from_data=True)
-                    bar_chart.set_categories(cats_bar)
-                    bar_chart.width = 16
-                    bar_chart.height = 9
-                    ws_charts.add_chart(bar_chart, "E2")
-
-                    # 2. Bảng số liệu Dư luận xã hội
-                    ws_charts['B10'] = "CƠ CẤU DƯ LUẬN XÃ HỘI"
-                    ws_charts['C10'] = "SỐ LƯỢNG"
-                    ws_charts['B11'] = "BC Dư luận gửi đi"
-                    ws_charts['C11'] = int(df['dl_baocao'].sum())
-                    ws_charts['B12'] = "Vấn đề nổi cộm"
-                    ws_charts['C12'] = int(df['dl_vande'].sum())
-                    ws_charts['B13'] = "Vụ việc đã xử lý"
-                    ws_charts['C13'] = int(df['dl_xuly'].sum())
-
-                    for row in range(10, 14):
-                        for col in range(2, 4):
-                            cell = ws_charts.cell(row=row, column=col)
-                            cell.border = thin_border
-                            if row == 10:
-                                cell.fill = PatternFill(start_color="C8102E", end_color="C8102E", fill_type="solid")
-                                cell.font = Font(bold=True, color="FFFFFF")
-
-                    # Vẽ Biểu đồ Tròn
-                    pie_chart = PieChart()
-                    pie_chart.title = "CƠ CẤU DƯ LUẬN XÃ HỘI"
-                    data_pie = Reference(ws_charts, min_col=3, min_row=10, max_row=13)
-                    cats_pie = Reference(ws_charts, min_col=2, min_row=11, max_row=13)
-                    pie_chart.add_data(data_pie, titles_from_data=True)
-                    pie_chart.set_categories(cats_pie)
-                    pie_chart.width = 14
-                    pie_chart.height = 9
-                    ws_charts.add_chart(pie_chart, "E12")
-
-                    ws_charts.column_dimensions['B'].width = 25
-                    ws_charts.column_dimensions['C'].width = 15
                 
                 col_btn1, col_btn2 = st.columns([2, 1.5])
                 with col_btn2:
-                    st.download_button(
-                        label="📥 TẢI BẢNG TỔNG HỢP (KÈM BIỂU ĐỒ EXCEL)",
-                        data=buffer.getvalue(),
-                        file_name=f"Bao_Cao_TGDV_{loai_bc}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        type="primary",
-                        use_container_width=True
-                    )
+                    st.download_button(label="📥 TẢI BẢNG TỔNG HỢP CHUYÊN NGHIỆP (EXCEL)", data=buffer.getvalue(), file_name=f"Bao_Cao_TGDV_{loai_bc}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", type="primary", use_container_width=True)
 
                 num_cols = df.select_dtypes(include='number').columns
                 df_sum = df.groupby('don_vi')[num_cols].sum().reset_index()
+
+                st.markdown("""
+                <div class="hide-on-print" style="text-align: right; margin-bottom: 20px;">
+                    <button onclick='window.parent.print()' style='background-color: #004B87; color: white; padding: 10px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>🖨️ XUẤT BÁO CÁO PDF ĐỂ IN</button>
+                </div>
+                """, unsafe_allow_html=True)
                 
-                st.markdown("<hr>", unsafe_allow_html=True)
                 c1, c2, c3, c4 = st.columns(4)
                 c1.markdown(f"<div class='metric-card'><p class='metric-title'>VB Chỉ đạo</p><p class='metric-number'>{df_sum['ld_vanban'].sum()}</p></div>", unsafe_allow_html=True)
                 c2.markdown(f"<div class='metric-card'><p class='metric-title'>Mô hình Dân vận Khéo</p><p class='metric-number'>{df_sum['dv_mh_hieuqua'].sum()}</p></div>", unsafe_allow_html=True)
                 c3.markdown(f"<div class='metric-card'><p class='metric-title'>Tổ Công nghệ số</p><p class='metric-number'>{df_sum['kq_tocongnghe'].sum()}</p></div>", unsafe_allow_html=True)
                 c4.markdown(f"<div class='metric-card'><p class='metric-title'>Đơn vị đã nộp</p><p class='metric-number'>{len(df_sum)}</p></div>", unsafe_allow_html=True)
-                st.markdown("<hr>", unsafe_allow_html=True)
 
-                col_c1, col_c2 = st.columns(2)
-                with col_c1:
+                # ===============================================
+                # DÀN 8 BIỂU ĐỒ TOÀN CẢNH (PANORAMA DASHBOARD)
+                # ===============================================
+                
+                # KHỐI 1: CHỈ ĐẠO & QUÁN TRIỆT NGHỊ QUYẾT
+                st.markdown("<div class='section-title'>I. CÔNG TÁC CHỈ ĐẠO & QUÁN TRIỆT NGHỊ QUYẾT</div>", unsafe_allow_html=True)
+                r1c1, r1c2 = st.columns(2)
+                with r1c1: # Chỉ đạo & Nhiệm vụ
                     fig1 = go.Figure(data=[
-                        go.Bar(name='CB biết AI', x=df_sum['don_vi'], y=df_sum['kq_cb_ai'], marker_color='#004B87'),
-                        go.Bar(name='Dân có Kỹ năng số', x=df_sum['don_vi'], y=df_sum['kq_nd_kynang'], marker_color='#C8102E')
+                        go.Bar(name='VB Cấp ủy ban hành', x=df_sum['don_vi'], y=df_sum['ld_vanban'], marker_color='#004B87'),
+                        go.Bar(name='Nhiệm vụ đã hoàn thành', x=df_sum['don_vi'], y=df_sum['nv_hoanthanh'], marker_color='#C8102E')
                     ])
-                    fig1.update_layout(title="Kỹ năng số: Cán bộ vs Người dân", barmode='group', template="plotly_white", plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
+                    fig1.update_layout(title="Chỉ đạo & Tiến độ Nhiệm vụ", barmode='group', template="plotly_white")
                     st.plotly_chart(fig1, use_container_width=True)
-                    
-                    fig2 = px.line(df_sum, x='don_vi', y='tt_mxh_tuongtac', title="Tương tác Mạng xã hội theo Đơn vị", markers=True)
-                    fig2.update_traces(line_color='#C8102E', marker=dict(size=8, color='#004B87'))
-                    fig2.update_layout(template="plotly_white", plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
+                with r1c2: # Quán triệt NQ
+                    fig2 = go.Figure(data=[
+                        go.Bar(name='Hội nghị tổ chức', x=df_sum['don_vi'], y=df_sum['nq_hoinghi'], marker_color='#28a745'),
+                        go.Bar(name='Văn bản triển khai', x=df_sum['don_vi'], y=df_sum['nq_vanban'], marker_color='#ffc107')
+                    ])
+                    fig2.update_layout(title="Công tác Quán triệt Nghị quyết", barmode='group', template="plotly_white")
                     st.plotly_chart(fig2, use_container_width=True)
 
-                with col_c2:
-                    fig3 = go.Figure(data=[
-                        go.Bar(name='Mô hình mới đăng ký', x=df_sum['don_vi'], y=df_sum['dv_mh_dangky'], marker_color='#004B87'),
-                        go.Bar(name='Đang hoạt động hiệu quả', x=df_sum['don_vi'], y=df_sum['dv_mh_hieuqua'], marker_color='#C8102E')
-                    ])
-                    fig3.update_layout(title="Hiệu quả Phong trào Dân vận khéo", barmode='stack', template="plotly_white", plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
+                # KHỐI 2: TUYÊN TRUYỀN & DƯ LUẬN XÃ HỘI
+                st.markdown("<div class='section-title'>II. TUYÊN TRUYỀN & DƯ LUẬN XÃ HỘI</div>", unsafe_allow_html=True)
+                r2c1, r2c2 = st.columns(2)
+                with r2c1: # Tuyên truyền Combo Chart (Bar + Line)
+                    fig3 = go.Figure()
+                    fig3.add_trace(go.Bar(name='Tin, bài, pano', x=df_sum['don_vi'], y=df_sum['tt_tinbai'], marker_color='#004B87'))
+                    fig3.add_trace(go.Scatter(name='Tương tác MXH', x=df_sum['don_vi'], y=df_sum['tt_mxh_tuongtac'], mode='lines+markers', marker_color='#C8102E', line=dict(width=3)))
+                    fig3.update_layout(title="Kết quả Tuyên truyền & Mạng xã hội", template="plotly_white")
                     st.plotly_chart(fig3, use_container_width=True)
-
+                with r2c2: # Dư luận Pie
                     fig4 = px.pie(values=[df_sum['dl_baocao'].sum(), df_sum['dl_vande'].sum(), df_sum['dl_xuly'].sum()], 
-                                  names=['Báo cáo gửi đi', 'Vấn đề phát hiện', 'Vụ việc đã xử lý'],
+                                  names=['Báo cáo gửi đi', 'Vấn đề nổi cộm', 'Vụ việc đã xử lý'],
                                   title="Cơ cấu hoạt động Dư luận xã hội", hole=.4,
                                   color_discrete_sequence=['#004B87', '#C8102E', '#E6E6E6'])
-                    fig4.update_layout(template="plotly_white", paper_bgcolor='rgba(0,0,0,0)')
+                    fig4.update_layout(template="plotly_white")
                     st.plotly_chart(fig4, use_container_width=True)
+
+                # KHỐI 3: KHOA GIÁO & DÂN VẬN KHÉO
+                st.markdown("<div class='section-title'>III. KHOA GIÁO, VH-VN & DÂN VẬN KHÉO</div>", unsafe_allow_html=True)
+                r3c1, r3c2 = st.columns(2)
+                with r3c1: # Khoa giáo
+                    df_sum['kg_tong'] = df_sum['kg_chuongtrinh'] + df_sum['kg_lop']
+                    fig5 = go.Figure(data=[
+                        go.Bar(name='HĐ Văn hóa - VN', x=df_sum['don_vi'], y=df_sum['kg_hoatdong'], marker_color='#17a2b8'),
+                        go.Bar(name='Lớp Y tế, Giáo dục', x=df_sum['don_vi'], y=df_sum['kg_tong'], marker_color='#004B87')
+                    ])
+                    fig5.update_layout(title="Hoạt động Khoa giáo, Văn hóa - Văn nghệ", barmode='group', template="plotly_white")
+                    st.plotly_chart(fig5, use_container_width=True)
+                with r3c2: # Dân vận
+                    fig6 = go.Figure(data=[
+                        go.Bar(name='Mô hình mới', x=df_sum['don_vi'], y=df_sum['dv_mh_moi'], marker_color='#ffc107'),
+                        go.Bar(name='Đang hoạt động hiệu quả', x=df_sum['don_vi'], y=df_sum['dv_mh_hieuqua'], marker_color='#C8102E')
+                    ])
+                    fig6.update_layout(title="Hiệu quả Phong trào Dân vận khéo", barmode='stack', template="plotly_white")
+                    st.plotly_chart(fig6, use_container_width=True)
+
+                # KHỐI 4: CHUYỂN ĐỔI SỐ
+                st.markdown("<div class='section-title'>IV. CHUYÊN ĐỀ: BÌNH DÂN HỌC VỤ SỐ</div>", unsafe_allow_html=True)
+                r4c1, r4c2 = st.columns(2)
+                with r4c1: # CĐS - Lan tỏa
+                    fig7 = go.Figure(data=[
+                        go.Bar(name='CB SH Chuyên đề', x=df_sum['don_vi'], y=df_sum['kq_chibo_cd'], marker_color='#004B87'),
+                        go.Bar(name='CB dùng Sổ tay', x=df_sum['don_vi'], y=df_sum['kq_chibo_sotay'], marker_color='#28a745')
+                    ])
+                    fig7.update_layout(title="Lan tỏa Kỹ năng số trong Sinh hoạt Chi bộ", barmode='group', template="plotly_white")
+                    st.plotly_chart(fig7, use_container_width=True)
+                with r4c2: # CĐS - Kỹ năng
+                    fig8 = go.Figure(data=[
+                        go.Bar(name='Cán bộ biết AI', x=df_sum['don_vi'], y=df_sum['kq_cb_ai'], marker_color='#004B87'),
+                        go.Bar(name='Dân có Kỹ năng số', x=df_sum['don_vi'], y=df_sum['kq_nd_kynang'], marker_color='#C8102E')
+                    ])
+                    fig8.update_layout(title="Kỹ năng số: Cán bộ vs Người dân", barmode='group', template="plotly_white")
+                    st.plotly_chart(fig8, use_container_width=True)
 
     with tab_admin:
         st.markdown("<h3 style='color:#C8102E;'>⚠️ KHU VỰC QUẢN TRỊ DỮ LIỆU</h3>", unsafe_allow_html=True)
