@@ -49,7 +49,7 @@ def get_months_for_filter(filter_type):
     return DANH_SACH_THANG
 
 # ==========================================
-# CSS SIÊU VIP (ĐỎ SẪM - XANH NAVY - TRẮNG)
+# CSS ĐỎ SẪM - XANH NAVY - TRẮNG
 # ==========================================
 st.markdown("""
 <style>
@@ -62,15 +62,6 @@ st.markdown("""
     .metric-card {background-color: #ffffff; padding: 20px; border-radius: 10px; border-top: 4px solid #C8102E; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center;}
     .metric-title {font-size: 14px; color: #004B87; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;}
     .metric-number {font-size: 28px; color: #C8102E; font-weight: 900; margin: 0;}
-    
-    /* CSS CHO IN ẤN PDF: ẨN MỌI NÚT VÀ MENU KHI IN */
-    @media print {
-        .stButton, .stSidebar, [data-testid="stHeader"], footer, .hide-on-print { display: none !important; }
-        .stApp { background-color: white !important; }
-        [data-testid="stExpander"] { border: 1px solid #004B87 !important; }
-        .main-header { color: #004B87 !important; }
-        .metric-card { border: 1px solid #C8102E !important; }
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -93,7 +84,7 @@ if st.session_state.role is None:
             pwd = st.text_input("🔑 Nhập mật khẩu truy cập:", type="password")
             if st.form_submit_button("Đăng nhập Hệ thống", use_container_width=True):
                 if pwd == "TGDV@2026": st.session_state.role = "user"; st.rerun()
-                elif pwd == "Admin@2026": st.session_state.role = "admin"; st.rerun()
+                elif pwd == "admin123": st.session_state.role = "admin"; st.rerun()
                 else: st.error("❌ Mật khẩu không đúng!")
     st.stop()
 
@@ -248,16 +239,25 @@ if st.session_state.role == "admin":
 
             if df.empty: st.warning("Không có số liệu cho kỳ này.")
             else:
+                # Nút tải file Excel/CSV tổng thể
+                csv_data = df.to_csv(index=False).encode('utf-8-sig')
+                
+                # Căn lề nút tải sang phải cho đẹp
+                col_btn1, col_btn2 = st.columns([2, 1])
+                with col_btn2:
+                    st.download_button(
+                        label="📥 TẢI XUỐNG BẢNG BÁO CÁO TỔNG THỂ (FILE EXCEL/CSV)",
+                        data=csv_data,
+                        file_name=f"Bao_Cao_TGDV_{loai_bc}.csv",
+                        mime="text/csv",
+                        type="primary",
+                        use_container_width=True
+                    )
+
                 num_cols = df.select_dtypes(include='number').columns
                 df_sum = df.groupby('don_vi')[num_cols].sum().reset_index()
                 
-                # Nút Print bằng JS bọc trong thẻ HTML cực đẹp và an toàn (sử dụng window.parent.print())
-                st.markdown("""
-                <div class="hide-on-print" style="margin-bottom: 20px; text-align: right;">
-                    <button onclick='window.parent.print()' style='background-color: #004B87; color: white; padding: 10px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 14px;'>🖨️ XUẤT BÁO CÁO PDF (IN)</button>
-                    <div style="font-size: 12px; color: #666; margin-top: 5px; font-style: italic;">(Hoặc ấn phím Ctrl + P / Cmd + P)</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.markdown("<hr>", unsafe_allow_html=True)
 
                 c1, c2, c3, c4 = st.columns(4)
                 c1.markdown(f"<div class='metric-card'><p class='metric-title'>VB Chỉ đạo</p><p class='metric-number'>{df_sum['ld_vanban'].sum()}</p></div>", unsafe_allow_html=True)
@@ -296,9 +296,6 @@ if st.session_state.role == "admin":
                                   color_discrete_sequence=['#004B87', '#C8102E', '#E6E6E6'])
                     fig4.update_layout(template="plotly_white", paper_bgcolor='rgba(0,0,0,0)')
                     st.plotly_chart(fig4, use_container_width=True)
-
-                st.markdown("<h3 class='main-header' style='text-align:left; font-size:20px;'>📋 BẢNG DỮ LIỆU TỔNG HỢP</h3>", unsafe_allow_html=True)
-                st.dataframe(df_sum, use_container_width=True)
 
     with tab_admin:
         st.markdown("<h3 style='color:#C8102E;'>⚠️ KHU VỰC QUẢN TRỊ DỮ LIỆU</h3>", unsafe_allow_html=True)
