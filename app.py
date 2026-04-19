@@ -232,7 +232,7 @@ with tab_nhap:
             tl_khokhan = st.text_area("Các khó khăn, vướng mắc:")
 
         st.markdown("<style>.stButton>button[kind='primary'] {background-color: #C8102E; border:none;}</style>", unsafe_allow_html=True)
-        if st.form_submit_button("🚀 GỬI / CẬP NHẬT BÁO CÁO LÊN BAN TỈNH ỦY", type="primary", use_container_width=True):
+        if st.form_submit_button("🚀 GỬI / CẬP NHẬT BÁO CÁO", type="primary", use_container_width=True):
             if not don_vi or not ky_bao_cao: st.error("⚠️ Vui lòng chọn Đơn vị và Tháng báo cáo!")
             else:
                 rec = {
