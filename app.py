@@ -25,6 +25,7 @@ DEFAULT_UNITS = [
 
 DANH_SACH_THANG = [f"Tháng {i}" for i in range(1, 13)]
 
+# ĐÃ BỔ SUNG THÊM 6 TRƯỜNG DỮ LIỆU MỚI (TỔNG CỘNG 54 CỘT)
 DICT_DICH_THUAT = {
     "don_vi": "Đơn vị báo cáo", "nguoi_bao_cao": "Người BC / SĐT", "ky_bao_cao": "Kỳ báo cáo",
     "ld_vanban": "Số VB cấp ủy ban hành", "ld_thammuu": "Số VB tham mưu cấp trên", "ld_cuochop": "Số cuộc họp, hội nghị",
@@ -32,6 +33,9 @@ DICT_DICH_THUAT = {
     "tt_tinbai": "Số tin, bài, pano", "tt_loa": "Số lượt loa truyền thanh", "tt_buoi": "Số buổi TT miệng", "tt_nguoi": "Số người nghe TT", "tt_mxh_bai": "Số bài trên MXH/Cổng TT", "tt_mxh_tuongtac": "Lượt tương tác MXH",
     "dl_baocao": "Số BC DLXH gửi đi", "dl_vande": "Số vấn đề nổi cộm", "dl_xuly": "Số vụ việc đã xử lý",
     "kg_hoatdong": "Số HĐ Văn hóa-Văn nghệ", "kg_chuongtrinh": "Số CT tuyên truyền GD", "kg_lop": "Số buổi Y tế/Môi trường",
+    "kg_bd_chuyennghiep": "Số buổi BDNT chuyên nghiệp", "kg_bd_quanchung": "Số buổi BDNT quần chúng", 
+    "kg_clb_thanhlap": "Số CLB VH-NT thành lập", "kg_clb_thanhvien": "Số thành viên CLB", 
+    "kg_hd_vhtt": "Số HĐ Lễ hội, Thể thao", "kg_khokhan": "Khó khăn Khoa giáo, VH-VN",
     "dv_mh_dangky": "Mô hình DVK đăng ký", "dv_mh_hieuqua": "Mô hình DVK hiệu quả", "dv_mh_moi": "Mô hình mới trong kỳ", "dv_cuocvandong": "Số cuộc vận động, TT", "dv_nguoithamgia": "Số lượt người tham gia", "dv_tiepxuc": "Số buổi đối thoại Nhân dân",
     "nv_duocgiao": "Nhiệm vụ trọng tâm giao", "nv_hoanthanh": "Nhiệm vụ TT hoàn thành", "nv_dangtrienkhai": "Nhiệm vụ đang triển khai", "nv_ketqua": "Kết quả thí điểm nổi bật",
     "bd_tinbai": "Số tin bài CĐS", "bd_cuocthi": "Số cuộc thi CĐS", "kq_tocongnghe": "Số Tổ công nghệ số",
@@ -39,7 +43,7 @@ DICT_DICH_THUAT = {
     "ts_cbccvc": "Tổng số CBCCVC", "kq_cb_ai": "Số CB biết dùng AI", "kq_cb_khoahoc": "Số CB học xong CĐS",
     "ts_nd_truongthanh": "Tổng ND trưởng thành", "kq_nd_kynang": "Số ND có Kỹ năng số", "kq_nd_vneid": "Số ND phổ cập VNeID",
     "kq_nd_smartphone": "Số ND dùng Smartphone", "kq_lop_nd": "Số buổi học cộng đồng",
-    "tl_mohinh": "Mô hình hay, sáng tạo", "tl_khokhan": "Khó khăn, vướng mắc"
+    "tl_mohinh": "Mô hình hay, sáng tạo", "tl_khokhan": "Khó khăn, vướng mắc chung"
 }
 
 def load_data():
@@ -173,11 +177,27 @@ with tab_nhap:
             dl_vande = c2.number_input("Số vấn đề nổi cộm được phát hiện", min_value=0, value=0)
             dl_xuly = c3.number_input("Số vụ việc đã giải quyết", min_value=0, value=0)
 
+        # ĐÃ NÂNG CẤP MỤC 5 THEO YÊU CẦU CỦA PHÒNG KHOA GIÁO, VH-VN
         with st.expander("5. KHOA GIÁO, VĂN HÓA - VĂN NGHỆ", expanded=False):
-            c1, c2, c3 = st.columns(3)
-            kg_hoatdong = c1.number_input("Số hoạt động VH-VN tổ chức", min_value=0, value=0)
-            kg_chuongtrinh = c2.number_input("Số chương trình tuyên truyền giáo dục", min_value=0, value=0)
-            kg_lop = c3.number_input("Số buổi liên quan y tế, môi trường", min_value=0, value=0)
+            st.markdown("<p style='color:#C8102E; font-weight:bold;'>5.1 Lĩnh vực Khoa giáo (Y tế, Giáo dục, KHCN...)</p>", unsafe_allow_html=True)
+            c1, c2 = st.columns(2)
+            kg_chuongtrinh = c1.number_input("Số chương trình tuyên truyền giáo dục", min_value=0, value=0)
+            kg_lop = c2.number_input("Số buổi liên quan y tế, môi trường", min_value=0, value=0)
+
+            st.markdown("<p style='color:#C8102E; font-weight:bold;'>5.2 Lĩnh vực Văn hóa - Nghệ thuật, Thể thao</p>", unsafe_allow_html=True)
+            c3, c4 = st.columns(2)
+            kg_bd_chuyennghiep = c3.number_input("Số buổi BD nghệ thuật chuyên nghiệp", min_value=0, value=0)
+            kg_bd_quanchung = c4.number_input("Số buổi BD nghệ thuật quần chúng", min_value=0, value=0)
+
+            c5, c6 = st.columns(2)
+            kg_clb_thanhlap = c5.number_input("Số câu lạc bộ Văn hóa, Nghệ thuật thành lập", min_value=0, value=0)
+            kg_clb_thanhvien = c6.number_input("Số thành viên các câu lạc bộ", min_value=0, value=0)
+
+            c7, c8 = st.columns(2)
+            kg_hoatdong = c7.number_input("Số HĐ Văn hóa - VN chung", min_value=0, value=0)
+            kg_hd_vhtt = c8.number_input("Số HĐ Văn hóa-Thể thao (lễ hội, giải đấu...)", min_value=0, value=0)
+
+            kg_khokhan = st.text_area("Những khó khăn, vướng mắc (Đặc thù lĩnh vực Khoa giáo, VH-VN):")
 
         with st.expander("6. CÔNG TÁC DÂN VẬN (DÂN VẬN KHÉO)", expanded=False):
             st.markdown("<p style='color:#C8102E; font-weight:bold;'>6.1 Phong trào Dân vận khéo</p>", unsafe_allow_html=True)
@@ -229,7 +249,7 @@ with tab_nhap:
 
         with st.expander("9. ĐÁNH GIÁ CHUNG & KHÓ KHĂN", expanded=False):
             tl_mohinh = st.text_area("Nêu các mô hình, cách làm sáng tạo hiệu quả:")
-            tl_khokhan = st.text_area("Các khó khăn, vướng mắc:")
+            tl_khokhan = st.text_area("Các khó khăn, vướng mắc chung:")
 
         st.markdown("<style>.stButton>button[kind='primary'] {background-color: #C8102E; border:none;}</style>", unsafe_allow_html=True)
         if st.form_submit_button("🚀 GỬI / CẬP NHẬT BÁO CÁO", type="primary", use_container_width=True):
@@ -242,6 +262,9 @@ with tab_nhap:
                     "tt_tinbai": tt_tinbai, "tt_loa": tt_loa, "tt_buoi": tt_buoi, "tt_nguoi": tt_nguoi, "tt_mxh_bai": tt_mxh_bai, "tt_mxh_tuongtac": tt_mxh_tuongtac,
                     "dl_baocao": dl_baocao, "dl_vande": dl_vande, "dl_xuly": dl_xuly,
                     "kg_hoatdong": kg_hoatdong, "kg_chuongtrinh": kg_chuongtrinh, "kg_lop": kg_lop,
+                    "kg_bd_chuyennghiep": kg_bd_chuyennghiep, "kg_bd_quanchung": kg_bd_quanchung,
+                    "kg_clb_thanhlap": kg_clb_thanhlap, "kg_clb_thanhvien": kg_clb_thanhvien,
+                    "kg_hd_vhtt": kg_hd_vhtt, "kg_khokhan": kg_khokhan,
                     "dv_mh_dangky": dv_mh_dangky, "dv_mh_hieuqua": dv_mh_hieuqua, "dv_mh_moi": dv_mh_moi, "dv_cuocvandong": dv_cuocvandong, "dv_nguoithamgia": dv_nguoithamgia, "dv_tiepxuc": dv_tiepxuc,
                     "nv_duocgiao": nv_duocgiao, "nv_hoanthanh": nv_hoanthanh, "nv_dangtrienkhai": nv_dangtrienkhai, "nv_ketqua": nv_ketqua,
                     "bd_tinbai": bd_tinbai, "bd_cuocthi": bd_cuocthi, "kq_tocongnghe": kq_tocongnghe,
@@ -269,7 +292,7 @@ if st.session_state.role == "admin":
             # Khởi tạo các cột thiếu nếu có
             for col in DICT_DICH_THUAT.keys():
                 if col not in df_raw.columns:
-                    df_raw[col] = 0 if col not in ['don_vi', 'nguoi_bao_cao', 'ky_bao_cao', 'nv_ketqua', 'tl_mohinh', 'tl_khokhan'] else ""
+                    df_raw[col] = 0 if col not in ['don_vi', 'nguoi_bao_cao', 'ky_bao_cao', 'nv_ketqua', 'tl_mohinh', 'tl_khokhan', 'kg_khokhan'] else ""
                     
             st.markdown("<h3 style='color:#004B87;'>🗓️ BỘ LỌC TỔNG HỢP (XEM TOÀN CẢNH)</h3>", unsafe_allow_html=True)
             c_f1, c_f2 = st.columns(2)
@@ -301,6 +324,7 @@ if st.session_state.role == "admin":
                 if 'nv_ketqua' in df.columns: agg_dict['nv_ketqua'] = gop_chu
                 if 'tl_mohinh' in df.columns: agg_dict['tl_mohinh'] = gop_chu
                 if 'tl_khokhan' in df.columns: agg_dict['tl_khokhan'] = gop_chu
+                if 'kg_khokhan' in df.columns: agg_dict['kg_khokhan'] = gop_chu # Đã thêm gộp Khó khăn Khoa giáo
                 
                 if 'nguoi_bao_cao' in df.columns: 
                     agg_dict['nguoi_bao_cao'] = lambda x: ", ".join(list(dict.fromkeys([str(i).strip() for i in x if pd.notna(i) and str(i).strip() != ""])))
@@ -313,7 +337,7 @@ if st.session_state.role == "admin":
                 # TẢI EXCEL TỔNG SAU KHI ĐÃ GỘP (1 ĐƠN VỊ = 1 DÒNG)
                 # ===============================================
                 
-                # Sắp xếp đúng 48 cột theo thiết kế
+                # Sắp xếp đúng 54 cột theo thiết kế mới
                 for col in DICT_DICH_THUAT.keys():
                     if col not in df_sum.columns:
                         df_sum[col] = 0 if col in num_cols else ""
@@ -326,12 +350,18 @@ if st.session_state.role == "admin":
                     worksheet = writer.sheets['Bao_Cao']
                     thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
                     
+                    # ĐÃ ĐIỀU CHỈNH INDEX CỘT KHỚP VỚI 54 CỘT
                     super_headers = [
-                        (1, 3, "THÔNG TIN CHUNG", "004B87"), (4, 6, "1. LÃNH ĐẠO, CHỈ ĐẠO", "C8102E"),
-                        (7, 10, "2. QUÁN TRIỆT NGHỊ QUYẾT", "004B87"), (11, 16, "3. CÔNG TÁC TUYÊN TRUYỀN", "C8102E"),
-                        (17, 19, "4. DƯ LUẬN XÃ HỘI", "004B87"), (20, 22, "5. KHOA GIÁO, VH-VN", "C8102E"),
-                        (23, 28, "6. CÔNG TÁC DÂN VẬN", "004B87"), (29, 32, "7. NHIỆM VỤ TRỌNG TÂM", "C8102E"),
-                        (33, 46, "8. BÌNH DÂN HỌC VỤ SỐ", "004B87"), (47, 48, "9. ĐÁNH GIÁ CHUNG", "C8102E")
+                        (1, 3, "THÔNG TIN CHUNG", "004B87"), 
+                        (4, 6, "1. LÃNH ĐẠO, CHỈ ĐẠO", "C8102E"),
+                        (7, 10, "2. QUÁN TRIỆT NGHỊ QUYẾT", "004B87"), 
+                        (11, 16, "3. CÔNG TÁC TUYÊN TRUYỀN", "C8102E"),
+                        (17, 19, "4. DƯ LUẬN XÃ HỘI", "004B87"), 
+                        (20, 28, "5. KHOA GIÁO, VH-VN", "C8102E"), # Đã mở rộng lên 9 cột
+                        (29, 34, "6. CÔNG TÁC DÂN VẬN", "004B87"), 
+                        (35, 38, "7. NHIỆM VỤ TRỌNG TÂM", "C8102E"),
+                        (39, 52, "8. BÌNH DÂN HỌC VỤ SỐ", "004B87"), 
+                        (53, 54, "9. ĐÁNH GIÁ CHUNG", "C8102E")
                     ]
                     for start_col, end_col, title, color in super_headers:
                         worksheet.merge_cells(start_row=1, start_column=start_col, end_row=1, end_column=end_col)
@@ -418,10 +448,11 @@ if st.session_state.role == "admin":
                 st.markdown("<div class='section-title'>III. KHOA GIÁO, VH-VN & DÂN VẬN KHÉO</div>", unsafe_allow_html=True)
                 r3c1, r3c2 = st.columns(2)
                 with r3c1: 
-                    df_sum['kg_tong'] = df_sum['kg_chuongtrinh'] + df_sum['kg_lop']
+                    # Đã nâng cấp biểu đồ Khoa giáo bao gồm biểu diễn nghệ thuật
+                    df_sum['kg_tong_bd'] = df_sum['kg_bd_chuyennghiep'] + df_sum['kg_bd_quanchung']
                     fig5 = go.Figure(data=[
-                        go.Bar(name='HĐ Văn hóa - VN', x=df_sum['don_vi'], y=df_sum['kg_hoatdong'], marker_color='#17a2b8'),
-                        go.Bar(name='Lớp Y tế, Giáo dục', x=df_sum['don_vi'], y=df_sum['kg_tong'], marker_color='#004B87')
+                        go.Bar(name='Lớp Y tế, Giáo dục', x=df_sum['don_vi'], y=df_sum['kg_chuongtrinh'] + df_sum['kg_lop'], marker_color='#004B87'),
+                        go.Bar(name='Biểu diễn Nghệ thuật', x=df_sum['don_vi'], y=df_sum['kg_tong_bd'], marker_color='#17a2b8')
                     ])
                     fig5.update_layout(title="Hoạt động Khoa giáo, Văn hóa - Văn nghệ", barmode='group', template="plotly_white")
                     st.plotly_chart(fig5, use_container_width=True)
