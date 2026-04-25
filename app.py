@@ -71,7 +71,22 @@ def get_months_for_filter(filter_type):
     if filter_type == "6 Tháng Cuối Năm": return [f"Tháng {i}" for i in range(7, 13)]
     if filter_type == "9 Tháng": return [f"Tháng {i}" for i in range(1, 10)]
     return DANH_SACH_THANG
+# ==========================================
+# HÀM ĐẾM LƯỢT TRUY CẬP THÔNG MINH
+# ==========================================
+def log_access(app_name):
+    # Tạo key riêng cho mỗi app để chỉ đếm 1 lần khi người dùng mới vào trang
+    key_name = f"da_dem_truy_cap_{app_name}"
+    if key_name not in st.session_state:
+        try:
+            supabase.table("thong_ke_truy_cap").insert({"ten_app": app_name}).execute()
+            st.session_state[key_name] = True
+        except:
+            pass # Lỗi mạng thì bỏ qua để không ảnh hưởng app
 
+# GỌI HÀM KÍCH HOẠT ĐẾM:
+# Sếp nhớ sửa chữ bên trong ngoặc kép cho khớp với tên của từng App nhé!
+log_access("Phòng họp E-Cabinet")
 # ==========================================
 # CSS ĐỎ SẪM - XANH NAVY - TRẮNG
 # ==========================================
