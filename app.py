@@ -74,7 +74,7 @@ def get_months_for_filter(filter_type):
 # ==========================================
 # HÀM ĐẾM LƯỢT TRUY CẬP THÔNG MINH
 # ==========================================
-def log_access(app_name:
+def log_access(app_name):
     # Tạo key riêng cho mỗi app để chỉ đếm 1 lần khi người dùng mới vào trang
     key_name = f"da_dem_truy_cap_{app_name}"
     if key_name not in st.session_state:
