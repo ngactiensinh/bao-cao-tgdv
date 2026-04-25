@@ -72,8 +72,18 @@ def get_months_for_filter(filter_type):
     if filter_type == "9 Tháng": return [f"Tháng {i}" for i in range(1, 10)]
     return DANH_SACH_THANG
 # ==========================================
-# HÀM ĐẾM LƯỢT TRUY CẬP THÔNG MINH
+# CẤU HÌNH SUPABASE & HÀM ĐẾM LƯỢT TRUY CẬP
 # ==========================================
+from supabase import create_client, Client
+
+SUPABASE_URL = "https://qqzsdxhqrdfvxnlurnyb.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxenNkeGhxcmRmdnhubHVybnliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MjY0NjAsImV4cCI6MjA5MTIwMjQ2MH0.H62F5zYEZ5l47fS4IdAE2JdRdI7inXQqWG0nvXhn2P8"
+
+try:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+except:
+    pass
+
 def log_access(app_name):
     # Tạo key riêng cho mỗi app để chỉ đếm 1 lần khi người dùng mới vào trang
     key_name = f"da_dem_truy_cap_{app_name}"
@@ -85,8 +95,8 @@ def log_access(app_name):
             pass # Lỗi mạng thì bỏ qua để không ảnh hưởng app
 
 # GỌI HÀM KÍCH HOẠT ĐẾM:
-# Sếp nhớ sửa chữ bên trong ngoặc kép cho khớp với tên của từng App nhé!
 log_access("Thu thập Báo cáo")
+
 # ==========================================
 # CSS ĐỎ SẪM - XANH NAVY - TRẮNG
 # ==========================================
