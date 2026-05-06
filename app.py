@@ -369,6 +369,27 @@ if st.session_state.role == "admin":
                 
                 df_export = df_sum[list(DICT_DICH_THUAT.keys())].rename(columns=DICT_DICH_THUAT)
                 
+                # ===============================================
+                # 🌟 TẠO DÒNG TỔNG CỘNG TỰ ĐỘNG THÔNG MINH
+                # ===============================================
+                total_row = {}
+                for col in df_export.columns:
+                    if pd.api.types.is_numeric_dtype(df_export[col]):
+                        # Nếu là cột tỷ lệ % thì tính trung bình, còn lại thì cộng dồn
+                        if col == DICT_DICH_THUAT.get('nq_tyle'):
+                            total_row[col] = round(df_export[col].mean(), 2) 
+                        else:
+                            total_row[col] = df_export[col].sum()
+                    else:
+                        total_row[col] = "" # Các cột chữ để trống
+                
+                # Gắn nhãn cho dòng cuối
+                total_row[DICT_DICH_THUAT['don_vi']] = "TỔNG CỘNG"
+                
+                # Nối dòng tổng vào cuối bảng
+                df_export = pd.concat([df_export, pd.DataFrame([total_row])], ignore_index=True)
+                # ===============================================
+                
                 buffer = io.BytesIO()
                 with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
                     df_export.to_excel(writer, index=False, sheet_name='Bao_Cao', startrow=1)
@@ -382,7 +403,7 @@ if st.session_state.role == "admin":
                         (7, 10, "2. QUÁN TRIỆT NGHỊ QUYẾT", "004B87"), 
                         (11, 16, "3. CÔNG TÁC TUYÊN TRUYỀN", "C8102E"),
                         (17, 19, "4. DƯ LUẬN XÃ HỘI", "004B87"), 
-                        (20, 28, "5. KHOA GIÁO, VH-VN", "C8102E"), # Đã mở rộng lên 9 cột
+                        (20, 28, "5. KHOA GIÁO, VH-VN", "C8102E"),
                         (29, 34, "6. CÔNG TÁC DÂN VẬN", "004B87"), 
                         (35, 38, "7. NHIỆM VỤ TRỌNG TÂM", "C8102E"),
                         (39, 52, "8. BÌNH DÂN HỌC VỤ SỐ", "004B87"), 
@@ -416,6 +437,15 @@ if st.session_state.role == "admin":
                         
                     worksheet.row_dimensions[1].height = 25
                     worksheet.row_dimensions[2].height = 35
+                    
+                    # ===============================================
+                    # 🌟 TRANG ĐIỂM CHO DÒNG TỔNG CỘNG ĐẸP LUNG LINH
+                    # ===============================================
+                    last_row = worksheet.max_row
+                    for col_idx in range(1, worksheet.max_column + 1):
+                        cell = worksheet.cell(row=last_row, column=col_idx)
+                        cell.font = Font(bold=True, color="C8102E") # Chữ in đậm, màu đỏ sẫm
+                        cell.fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid") # Nền màu vàng nhạt
                 
                 col_btn1, col_btn2 = st.columns([2, 1.5])
                 with col_btn2:
