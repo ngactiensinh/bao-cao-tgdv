@@ -139,7 +139,7 @@ if st.session_state.role is None:
             pwd = st.text_input("🔑 Nhập mật khẩu truy cập:", type="password")
             if st.form_submit_button("Đăng nhập Hệ thống", use_container_width=True):
                 if pwd == "TGDV@2026": st.session_state.role = "user"; st.rerun()
-                elif pwd == "admin123": st.session_state.role = "admin"; st.rerun()
+                elif pwd == "Admin@2026": st.session_state.role = "admin"; st.rerun()
                 else: st.error("❌ Mật khẩu không đúng!")
     st.stop()
 
