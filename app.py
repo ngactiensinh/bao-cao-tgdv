@@ -10,7 +10,7 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 # ==========================================
-# CẤU HÌNH & CSS TRANG TRANG TRỌNG
+# CẤU HÌNH & CSS TRANG
 # ==========================================
 st.set_page_config(page_title="Hệ thống Báo cáo TGDV", page_icon="📊", layout="wide")
 
@@ -31,7 +31,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# CƠ SỞ DỮ LIỆU & DANH SÁCH ĐƠN VỊ
+# QUẢN LÝ DỮ LIỆU FILE
 # ==========================================
 DATA_FILE = "dulieu_baocao.json"
 CONFIG_FILE = "config_donvi.json"
@@ -90,25 +90,6 @@ def get_months_for_filter(filter_type):
     return DANH_SACH_THANG
 
 # ==========================================
-# CẤU HÌNH SUPABASE & LƯU TRUY CẬP
-# ==========================================
-from supabase import create_client, Client
-SUPABASE_URL = "https://qqzsdxhqrdfvxnlurnyb.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxenNkeGhxcmRmdnhubHVybnliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MjY0NjAsImV4cCI6MjA5MTIwMjQ2MH0.H62F5zYEZ5l47fS4IdAE2JdRdI7inXQqWG0nvXhn2P8"
-try:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-except: pass
-
-def log_access(app_name):
-    key_name = f"da_dem_truy_cap_{app_name}"
-    if key_name not in st.session_state:
-        try:
-            supabase.table("thong_ke_truy_cap").insert({"ten_app": app_name}).execute()
-            st.session_state[key_name] = True
-        except: pass 
-log_access("Thu thập Báo cáo")
-
-# ==========================================
 # ĐĂNG NHẬP PHÂN QUYỀN
 # ==========================================
 if "role" not in st.session_state: st.session_state.role = None
@@ -132,7 +113,7 @@ with st.sidebar:
     if st.button("🚪 Đăng xuất"): st.session_state.role = None; st.rerun()
 
 # ==========================================
-# CẤU TRÚC TAB MỚI THEO Ý SẾP TUẤN
+# CẤU TRÚC TAB
 # ==========================================
 st.markdown("<h1 class='main-header'>HỆ THỐNG THU THẬP BÁO CÁO CƠ SỞ</h1>", unsafe_allow_html=True)
 
@@ -152,7 +133,8 @@ else:
 with tab_nhap:
     st.markdown("### 1️⃣ XÁC ĐỊNH ĐƠN VỊ & KỲ BÁO CÁO")
     c1, c2, c3 = st.columns([2, 1.5, 1.5])
-    dv = c1.selectbox("🏢 Đơn vị:", load_units(), index=None, placeholder="Gõ tìm đơn vị...")
+    all_units_list = load_units()
+    dv = c1.selectbox("🏢 Đơn vị:", all_units_list, index=None, placeholder="Gõ tìm đơn vị...")
     th = c3.selectbox("🗓️ Tháng:", DANH_SACH_THANG, index=None, placeholder="Chọn tháng...")
     
     old = {}
@@ -182,7 +164,7 @@ with tab_nhap:
 
             with st.expander("3. CÔNG TÁC TUYÊN TRUYỀN", expanded=False):
                 c1, c2, c3, c4 = st.columns(4)
-                tt_tb = c1.number_input("Số tin, bài, pano", min_value=0, value=int(old.get('tt_tinbai',0)))
+                tt_tb = c1.number_input("Số tin, bài, pano", min_value=0, value=int(old_data_val := old.get('tt_tinbai',0)))
                 tt_lo = c2.number_input("Số lượt loa truyền thanh", min_value=0, value=int(old.get('tt_loa',0)))
                 tt_bu = c3.number_input("Số buổi tuyên truyền miệng", min_value=0, value=int(old.get('tt_buoi',0)))
                 tt_nn = c4.number_input("Số người nghe TT miệng", min_value=0, value=int(old.get('tt_nguoi',0)))
@@ -242,7 +224,7 @@ with tab_nhap:
                     data.append(new_rec); save_data(data); st.success("✅ Thành công!")
 
 # ------------------------------------------
-# CHUẨN BỊ DỮ LIỆU DÙNG CHUNG CHO TAB 2 & 3
+# CHUẨN BỊ DỮ LIỆU CHUNG CHO TIẾN ĐỘ & BIỂU ĐỒ
 # ------------------------------------------
 if st.session_state.role in ["admin", "chuyen_vien"]:
     all_raw = load_data()
@@ -255,9 +237,9 @@ if st.session_state.role in ["admin", "chuyen_vien"]:
         m_l = get_months_for_filter(l_bc)
         df_cur = pd.DataFrame([d for d in all_raw if d['ky_bao_cao'] in m_l])
     
-    all_u = load_units()
+    current_units_list = load_units()
     u_done = df_cur['don_vi'].unique().tolist() if not df_cur.empty else []
-    u_miss = [u for u in all_u if u not in u_done]
+    u_miss = [u for u in current_units_list if u not in u_done]
 
     # --------------------------------------
     # TAB 2: TIẾN ĐỘ & TRÍCH XUẤT
@@ -266,12 +248,11 @@ if st.session_state.role in ["admin", "chuyen_vien"]:
         c1, c2, c3, c4 = st.columns(4)
         c1.markdown(f"<div class='metric-card'><p class='metric-title'>Đã nộp</p><p class='metric-number' style='color:#28a745;'>{len(u_done)}</p></div>", unsafe_allow_html=True)
         c2.markdown(f"<div class='metric-card'><p class='metric-title'>Chưa nộp</p><p class='metric-number'>{len(u_miss)}</p></div>", unsafe_allow_html=True)
-        rate = (len(u_done)/len(all_u)*100) if all_u else 0
+        rate = (len(u_done)/len(current_units_list)*100) if current_units_list else 0
         c3.markdown(f"<div class='metric-card'><p class='metric-title'>Tỷ lệ</p><p class='metric-number' style='color:#004B87;'>{rate:.1f}%</p></div>", unsafe_allow_html=True)
-        c4.markdown(f"<div class='metric-card'><p class='metric-title'>Tổng đơn vị</p><p class='metric-number'>{len(all_u)}</p></div>", unsafe_allow_html=True)
+        c4.markdown(f"<div class='metric-card'><p class='metric-title'>Tổng đơn vị</p><p class='metric-number'>{len(current_units_list)}</p></div>", unsafe_allow_html=True)
 
         if not df_cur.empty:
-            # Thuật toán gộp Excel
             num_cols = df_cur.select_dtypes(include='number').columns
             agg_dict = {col: ('mean' if col=='nq_tyle' else 'sum') for col in num_cols}
             def g_c(x):
@@ -287,7 +268,6 @@ if st.session_state.role in ["admin", "chuyen_vien"]:
                 if c not in df_sum.columns: df_sum[c] = 0 if c in num_cols else ""
             
             df_ex = df_sum[list(DICT_DICH_THUAT.keys())].rename(columns=DICT_DICH_THUAT)
-            # Dòng tổng cộng
             t_r = {c: (round(df_ex[c].mean(),2) if c==DICT_DICH_THUAT['nq_tyle'] else df_ex[c].sum()) if pd.api.types.is_numeric_dtype(df_ex[c]) else "" for c in df_ex.columns}
             t_r[DICT_DICH_THUAT['don_vi']] = "TỔNG CỘNG"
             df_ex = pd.concat([df_ex, pd.DataFrame([t_r])], ignore_index=True)
@@ -295,11 +275,6 @@ if st.session_state.role in ["admin", "chuyen_vien"]:
             buf = io.BytesIO()
             with pd.ExcelWriter(buf, engine='openpyxl') as wr:
                 df_ex.to_excel(wr, index=False, sheet_name='BaoCao', startrow=1)
-                ws = wr.sheets['BaoCao']
-                # ... (Phần trang trí Excel giữ nguyên như bản trước để chuyên nghiệp)
-                last_row = ws.max_row
-                for col in range(1, ws.max_column + 1):
-                    ws.cell(row=last_row, column=col).font = Font(bold=True, color="C8102E")
             
             st.write("")
             st.download_button("📥 TẢI BẢNG TỔNG HỢP GỘP SỐ LIỆU (EXCEL)", buf.getvalue(), f"Tong_hop_{l_bc}.xlsx", type="primary", use_container_width=True)
@@ -318,31 +293,29 @@ if st.session_state.role in ["admin", "chuyen_vien"]:
                 for m in sorted(u_miss): st.text(f"🔸 {m}")
 
     # --------------------------------------
-    # TAB 3: PHÂN TÍCH BIỂU ĐỒ (8 Form)
+    # TAB 3: PHÂN TÍCH BIỂU ĐỒ (8 Biểu đồ)
     # --------------------------------------
     with tab_bieudo:
-        if df_cur.empty: st.warning("Chưa có số liệu để vẽ biểu đồ.")
+        if df_cur.empty: st.warning("Chưa có số liệu.")
         else:
-            # Sử dụng df_sum đã tính toán ở trên
-            st.info(f"📊 Đang hiển thị số liệu phân tích cho kỳ: **{l_bc}**")
-            
+            st.info(f"📊 Phân tích số liệu kỳ: **{l_bc}**")
             st.markdown("<div class='section-title'>1. LÃNH ĐẠO & 2. NGHỊ QUYẾT</div>", unsafe_allow_html=True)
             r1c1, r1c2 = st.columns(2)
             with r1c1:
                 f1 = go.Figure(data=[go.Bar(name='VB ban hành', x=df_sum['don_vi'], y=df_sum['ld_vanban'], marker_color='#004B87'),
                                      go.Bar(name='Tham mưu', x=df_sum['don_vi'], y=df_sum['ld_thammuu'], marker_color='#C8102E')])
-                f1.update_layout(title="Công tác Lãnh đạo, chỉ đạo", barmode='group', height=400)
+                f1.update_layout(title="Công tác Lãnh đạo", barmode='group')
                 st.plotly_chart(f1, use_container_width=True)
             with r1c2:
                 f2 = go.Figure(data=[go.Bar(name='Hội nghị NQ', x=df_sum['don_vi'], y=df_sum['nq_hoinghi'], marker_color='#28a745'),
                                      go.Bar(name='VB triển khai', x=df_sum['don_vi'], y=df_sum['nq_vanban'], marker_color='#ffc107')])
-                f2.update_layout(title="Quán triệt Nghị quyết", barmode='group', height=400)
+                f2.update_layout(title="Quán triệt Nghị quyết", barmode='group')
                 st.plotly_chart(f2, use_container_width=True)
 
             st.markdown("<div class='section-title'>3. TUYÊN TRUYỀN & 4. DƯ LUẬN</div>", unsafe_allow_html=True)
             r2c1, r2c2 = st.columns(2)
             with r2c1:
-                f3 = px.line(df_sum, x='don_vi', y=['tt_tinbai', 'tt_mxh_bai'], markers=True, title="Tin bài Tuyên truyền & MXH")
+                f3 = px.line(df_sum, x='don_vi', y=['tt_tinbai', 'tt_mxh_bai'], markers=True, title="Tuyên truyền & MXH")
                 st.plotly_chart(f3, use_container_width=True)
             with r2c2:
                 f4 = px.pie(values=[df_sum['dl_baocao'].sum(), df_sum['dl_vande'].sum(), df_sum['dl_xuly'].sum()], 
@@ -352,12 +325,12 @@ if st.session_state.role in ["admin", "chuyen_vien"]:
             st.markdown("<div class='section-title'>5. KHOA GIÁO & 6. DÂN VẬN</div>", unsafe_allow_html=True)
             r3c1, r3c2 = st.columns(2)
             with r3c1:
-                f5 = px.bar(df_sum, x='don_vi', y=['kg_chuongtrinh', 'kg_bd_chuyennghiep'], title="Văn hóa - Nghệ thuật & Khoa giáo")
+                f5 = px.bar(df_sum, x='don_vi', y=['kg_chuongtrinh', 'kg_bd_chuyennghiep'], title="Văn hóa & Khoa giáo")
                 st.plotly_chart(f5, use_container_width=True)
             with r3c2:
-                f6 = go.Figure(data=[go.Bar(name='Mô hình mới', x=df_sum['don_vi'], y=df_sum['dv_mh_dangky'], marker_color='#17a2b8'),
+                f6 = go.Figure(data=[go.Bar(name='Mô hình DVK', x=df_sum['don_vi'], y=df_sum['dv_mh_dangky'], marker_color='#17a2b8'),
                                      go.Bar(name='Hiệu quả', x=df_sum['don_vi'], y=df_sum['dv_mh_hieuqua'], marker_color='#004B87')])
-                f6.update_layout(title="Phong trào Dân vận khéo", barmode='stack')
+                f6.update_layout(barmode='stack', title="Dân vận khéo")
                 st.plotly_chart(f6, use_container_width=True)
 
             st.markdown("<div class='section-title'>7. NHIỆM VỤ & 8. HỌC VỤ SỐ</div>", unsafe_allow_html=True)
@@ -365,25 +338,51 @@ if st.session_state.role in ["admin", "chuyen_vien"]:
             with r4c1:
                 f7 = go.Figure(data=[go.Bar(name='Giao', x=df_sum['don_vi'], y=df_sum['nv_duocgiao'], marker_color='#E6E6E6'),
                                      go.Bar(name='Hoàn thành', x=df_sum['don_vi'], y=df_sum['nv_hoanthanh'], marker_color='#C8102E')])
-                f7.update_layout(title="Tiến độ Nhiệm vụ trọng tâm")
                 st.plotly_chart(f7, use_container_width=True)
             with r4c2:
-                f8 = px.bar(df_sum, x='don_vi', y='kq_cb_ai', color='kq_cb_ai', title="Cán bộ ứng dụng AI (Bình dân học vụ số)")
+                f8 = px.bar(df_sum, x='don_vi', y='kq_cb_ai', color='kq_cb_ai', title="Cán bộ biết dùng AI")
                 st.plotly_chart(f8, use_container_width=True)
 
 # ------------------------------------------
-# TAB 4: QUẢN TRỊ ADMIN (Giữ nguyên)
+# TAB 4: QUẢN TRỊ ADMIN (KHÔI PHỤC ĐỦ TÍNH NĂNG)
 # ------------------------------------------
 if st.session_state.role == "admin":
     with tab_admin:
-        st.markdown("### ⚙️ QUẢN TRỊ HỆ THỐNG")
-        c_del1, c_del2 = st.columns(2)
-        with c_del1:
-            st.markdown("#### 🗑️ Xóa báo cáo")
-            cur_data = load_data()
-            if cur_data:
-                d_v = st.selectbox("Chọn đơn vị:", list(set([d['don_vi'] for d in cur_data])), key="dv_del")
-                t_h = st.selectbox("Chọn tháng:", list(set([d['ky_bao_cao'] for d in cur_data if d['don_vi']==d_v])), key="th_del")
-                if st.button("🔥 XÁC NHẬN XÓA"):
-                    new_d = [d for d in cur_data if not (d['don_vi']==d_v and d['ky_bao_cao']==t_h)]
-                    save_data(new_d); st.success("Đã xóa!"); st.rerun()
+        st.markdown("<h3 style='color:#C8102E;'>⚠️ KHU VỰC QUẢN TRỊ HỆ THỐNG</h3>", unsafe_allow_html=True)
+        col_adm1, col_adm2 = st.columns(2)
+        
+        with col_adm1:
+            st.markdown("#### 🗑️ QUẢN LÝ XÓA DỮ LIỆU")
+            current_data = load_data()
+            if current_data:
+                dv_del = st.selectbox("Chọn đơn vị muốn xóa:", list(set([d['don_vi'] for d in current_data])), key="dv_xoa")
+                th_del = st.selectbox("Chọn tháng muốn xóa:", list(set([d['ky_bao_cao'] for d in current_data if d['don_vi']==dv_del])), key="th_xoa")
+                if st.button("🔥 XÁC NHẬN XÓA BÁO CÁO"):
+                    new_data = [d for d in current_data if not (d['don_vi']==dv_del and d['ky_bao_cao']==th_del)]
+                    save_data(new_data); st.success(f"Đã xóa dữ liệu của {dv_del}!"); st.rerun()
+            else: st.info("Chưa có dữ liệu báo cáo.")
+
+        with col_adm2:
+            st.markdown("#### 🏢 QUẢN LÝ DANH SÁCH ĐƠN VỊ")
+            u_list = load_units()
+            
+            # --- Mục thêm đơn vị đây sếp ơi! ---
+            st.write("---")
+            new_u = st.text_input("➕ Tên đơn vị mới cần thêm:")
+            if st.button("XÁC NHẬN THÊM ĐƠN VỊ"):
+                if new_u and new_u not in u_list:
+                    u_list.append(new_u)
+                    save_units(u_list)
+                    st.success(f"Đã thêm thành công: {new_u}!")
+                    st.rerun()
+                else: st.warning("Tên đơn vị trống hoặc đã tồn tại!")
+            
+            # --- Mục xóa đơn vị khỏi danh sách ---
+            st.write("---")
+            rem_u = st.selectbox("🗑️ Chọn đơn vị cần xóa khỏi danh sách:", ["-- Chọn --"] + u_list)
+            if st.button("XÁC NHẬN XÓA ĐƠN VỊ"):
+                if rem_u != "-- Chọn --":
+                    u_list.remove(rem_u)
+                    save_units(u_list)
+                    st.success(f"Đã xóa {rem_u} khỏi danh sách đơn vị!")
+                    st.rerun()
