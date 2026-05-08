@@ -109,7 +109,6 @@ st.markdown("""
     .metric-number {font-size: 28px; color: #C8102E; font-weight: 900; margin: 0;}
     .section-title {color: #004B87; border-bottom: 3px solid #C8102E; padding-bottom: 5px; margin-top: 30px; margin-bottom: 20px; font-weight: bold; font-size: 20px;}
     .step-header {color: #C8102E; font-weight: bold; margin-top: 20px; margin-bottom: 10px;}
-    .status-tag {padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; color: white;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -295,7 +294,7 @@ with tab_nhap:
             st.markdown("<style>.stButton>button[kind='primary'] {background-color: #C8102E; border:none;}</style>", unsafe_allow_html=True)
             
             if st.form_submit_button("🚀 GỬI / CẬP NHẬT BÁO CÁO", type="primary", use_container_width=True):
-                if not don_vi or not ky_bao_cao or not nguoi_bao_cao: st.error("⚠️ Vui lòng điền đủ Đơn vị, Tháng và Người báo cáo!")
+                if not don_vi or not ky_bao_cao or not nguoi_bao_cao: st.error("⚠️ Thiếu thông tin!")
                 else:
                     rec = {
                         "don_vi": don_vi, "nguoi_bao_cao": nguoi_bao_cao, "ky_bao_cao": ky_bao_cao, "ngay_nop": datetime.now().strftime("%d/%m/%Y %H:%M"),
@@ -347,31 +346,8 @@ if st.session_state.role in ["admin", "chuyen_vien"]:
         c3.markdown(f"<div class='metric-card'><p class='metric-title'>Tỷ lệ hoàn thành</p><p class='metric-number' style='color:#004B87;'>{rate:.1f}%</p></div>", unsafe_allow_html=True)
         c4.markdown(f"<div class='metric-card'><p class='metric-title'>Tổng số đơn vị</p><p class='metric-number'>{len(all_units)}</p></div>", unsafe_allow_html=True)
 
-        # --- HIỂN THỊ DANH SÁCH CHI TIẾT ---
-        st.markdown("<div class='section-title'>📊 CHI TIẾT TIẾN ĐỘ NỘP BÁO CÁO</div>", unsafe_allow_html=True)
-        col_list1, col_list2 = st.columns(2)
-        
-        with col_list1:
-            st.markdown(f"<p style='color:#28a745; font-weight:bold;'>✅ DANH SÁCH ĐÃ NỘP ({len(units_done)})</p>", unsafe_allow_html=True)
-            if units_done:
-                df_done = df[['don_vi', 'ngay_nop', 'nguoi_bao_cao']].drop_duplicates(subset=['don_vi'], keep='last')
-                st.dataframe(df_done.rename(columns={'don_vi':'Đơn vị', 'ngay_nop':'Nộp lúc', 'nguoi_bao_cao':'Người nộp'}), use_container_width=True, hide_index=True)
-                st.caption("*(Lưu ý: Các đơn vị nộp sau ngày 18 sẽ được coi là nộp muộn)*")
-            else: st.write("Chưa có đơn vị nào nộp.")
-
-        with col_list2:
-            st.markdown(f"<p style='color:#C8102E; font-weight:bold;'>❌ DANH SÁCH CHƯA NỘP ({len(units_missing)})</p>", unsafe_allow_html=True)
-            if units_missing:
-                st.info("Đồng chí có thể copy danh sách này để nhắc nhở trên Zalo:")
-                st.code(", ".join(units_missing))
-                for u in sorted(units_missing):
-                    st.markdown(f"🔸 {u}")
-            else: st.success("🎉 Tuyệt vời! 100% đơn vị đã hoàn thành báo cáo.")
-
         if not df.empty:
-            st.write("---")
-            
-            # --- CODE TẠO EXCEL TỔNG HỢP ---
+            # --- CHẠY NGẦM TẠO FILE EXCEL ---
             num_cols = df.select_dtypes(include='number').columns
             agg_dict = {}
             for col in num_cols:
@@ -399,7 +375,6 @@ if st.session_state.role in ["admin", "chuyen_vien"]:
                     df_sum[col] = 0 if col in num_cols else ""
             
             df_export = df_sum[list(DICT_DICH_THUAT.keys())].rename(columns=DICT_DICH_THUAT)
-            
             total_row = {}
             for col in df_export.columns:
                 if pd.api.types.is_numeric_dtype(df_export[col]):
@@ -466,9 +441,103 @@ if st.session_state.role in ["admin", "chuyen_vien"]:
                     cell.font = Font(bold=True, color="C8102E")
                     cell.fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid") 
             
-            col_btn1, col_btn2 = st.columns([2, 1.5])
-            with col_btn2:
+            # --- ĐƯA NÚT TẢI EXCEL LÊN TRÊN CÙNG ---
+            st.write("") 
+            c_btn1, c_btn2, c_btn3 = st.columns([1, 2, 1])
+            with c_btn2:
                 st.download_button(label="📥 TẢI BẢNG TỔNG HỢP CHUYÊN NGHIỆP (EXCEL)", data=buffer.getvalue(), file_name=f"Bao_Cao_TGDV_{loai_bc}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", type="primary", use_container_width=True)
+            st.markdown("---")
+
+        # --- HIỂN THỊ DANH SÁCH CHI TIẾT ---
+        st.markdown("<div class='section-title'>📊 CHI TIẾT TIẾN ĐỘ NỘP BÁO CÁO</div>", unsafe_allow_html=True)
+        col_list1, col_list2 = st.columns(2)
+        
+        with col_list1:
+            st.markdown(f"<p style='color:#28a745; font-weight:bold;'>✅ DANH SÁCH ĐÃ NỘP ({len(units_done)})</p>", unsafe_allow_html=True)
+            if units_done:
+                df_done = df[['don_vi', 'ngay_nop', 'nguoi_bao_cao']].drop_duplicates(subset=['don_vi'], keep='last')
+                st.dataframe(df_done.rename(columns={'don_vi':'Đơn vị', 'ngay_nop':'Nộp lúc', 'nguoi_bao_cao':'Người nộp'}), use_container_width=True, hide_index=True)
+                st.caption("*(Lưu ý: Các đơn vị nộp sau ngày 18 sẽ được coi là nộp muộn)*")
+            else: st.write("Chưa có đơn vị nào nộp.")
+
+        with col_list2:
+            st.markdown(f"<p style='color:#C8102E; font-weight:bold;'>❌ DANH SÁCH CHƯA NỘP ({len(units_missing)})</p>", unsafe_allow_html=True)
+            if units_missing:
+                st.info("Đồng chí có thể copy danh sách này để nhắc nhở trên Zalo:")
+                st.code(", ".join(units_missing))
+                for u in sorted(units_missing):
+                    st.markdown(f"🔸 {u}")
+            else: st.success("🎉 Tuyệt vời! 100% đơn vị đã hoàn thành báo cáo.")
+
+        # --- TRẢ LẠI 8 BIỂU ĐỒ TOÀN CẢNH ---
+        if not df.empty:
+            st.markdown("<div class='section-title'>I. CÔNG TÁC CHỈ ĐẠO & QUÁN TRIỆT NGHỊ QUYẾT</div>", unsafe_allow_html=True)
+            r1c1, r1c2 = st.columns(2)
+            with r1c1: 
+                fig1 = go.Figure(data=[
+                    go.Bar(name='VB Cấp ủy ban hành', x=df_sum['don_vi'], y=df_sum['ld_vanban'], marker_color='#004B87'),
+                    go.Bar(name='Nhiệm vụ đã hoàn thành', x=df_sum['don_vi'], y=df_sum['nv_hoanthanh'], marker_color='#C8102E')
+                ])
+                fig1.update_layout(title="Chỉ đạo & Tiến độ Nhiệm vụ", barmode='group', template="plotly_white")
+                st.plotly_chart(fig1, use_container_width=True)
+            with r1c2: 
+                fig2 = go.Figure(data=[
+                    go.Bar(name='Hội nghị tổ chức', x=df_sum['don_vi'], y=df_sum['nq_hoinghi'], marker_color='#28a745'),
+                    go.Bar(name='Văn bản triển khai', x=df_sum['don_vi'], y=df_sum['nq_vanban'], marker_color='#ffc107')
+                ])
+                fig2.update_layout(title="Công tác Quán triệt Nghị quyết", barmode='group', template="plotly_white")
+                st.plotly_chart(fig2, use_container_width=True)
+
+            st.markdown("<div class='section-title'>II. TUYÊN TRUYỀN & DƯ LUẬN XÃ HỘI</div>", unsafe_allow_html=True)
+            r2c1, r2c2 = st.columns(2)
+            with r2c1: 
+                fig3 = go.Figure()
+                fig3.add_trace(go.Bar(name='Tin, bài, pano', x=df_sum['don_vi'], y=df_sum['tt_tinbai'], marker_color='#004B87'))
+                fig3.add_trace(go.Scatter(name='Tương tác MXH', x=df_sum['don_vi'], y=df_sum['tt_mxh_tuongtac'], mode='lines+markers', marker_color='#C8102E', line=dict(width=3)))
+                fig3.update_layout(title="Kết quả Tuyên truyền & Mạng xã hội", template="plotly_white")
+                st.plotly_chart(fig3, use_container_width=True)
+            with r2c2: 
+                fig4 = px.pie(values=[df_sum['dl_baocao'].sum(), df_sum['dl_vande'].sum(), df_sum['dl_xuly'].sum()], 
+                              names=['Báo cáo gửi đi', 'Vấn đề nổi cộm', 'Vụ việc đã xử lý'],
+                              title="Cơ cấu hoạt động Dư luận xã hội", hole=.4,
+                              color_discrete_sequence=['#004B87', '#C8102E', '#E6E6E6'])
+                fig4.update_layout(template="plotly_white")
+                st.plotly_chart(fig4, use_container_width=True)
+
+            st.markdown("<div class='section-title'>III. KHOA GIÁO, VH-VN & DÂN VẬN KHÉO</div>", unsafe_allow_html=True)
+            r3c1, r3c2 = st.columns(2)
+            with r3c1: 
+                df_sum['kg_tong_bd'] = df_sum['kg_bd_chuyennghiep'] + df_sum['kg_bd_quanchung']
+                fig5 = go.Figure(data=[
+                    go.Bar(name='Lớp Y tế, Giáo dục', x=df_sum['don_vi'], y=df_sum['kg_chuongtrinh'] + df_sum['kg_lop'], marker_color='#004B87'),
+                    go.Bar(name='Biểu diễn Nghệ thuật', x=df_sum['don_vi'], y=df_sum['kg_tong_bd'], marker_color='#17a2b8')
+                ])
+                fig5.update_layout(title="Hoạt động Khoa giáo, Văn hóa - Văn nghệ", barmode='group', template="plotly_white")
+                st.plotly_chart(fig5, use_container_width=True)
+            with r3c2: 
+                fig6 = go.Figure(data=[
+                    go.Bar(name='Mô hình mới', x=df_sum['don_vi'], y=df_sum['dv_mh_moi'], marker_color='#ffc107'),
+                    go.Bar(name='Đang hoạt động hiệu quả', x=df_sum['don_vi'], y=df_sum['dv_mh_hieuqua'], marker_color='#C8102E')
+                ])
+                fig6.update_layout(title="Hiệu quả Phong trào Dân vận khéo", barmode='stack', template="plotly_white")
+                st.plotly_chart(fig6, use_container_width=True)
+
+            st.markdown("<div class='section-title'>IV. CHUYÊN ĐỀ: BÌNH DÂN HỌC VỤ SỐ</div>", unsafe_allow_html=True)
+            r4c1, r4c2 = st.columns(2)
+            with r4c1: 
+                fig7 = go.Figure(data=[
+                    go.Bar(name='CB SH Chuyên đề', x=df_sum['don_vi'], y=df_sum['kq_chibo_cd'], marker_color='#004B87'),
+                    go.Bar(name='CB dùng Sổ tay', x=df_sum['don_vi'], y=df_sum['kq_chibo_sotay'], marker_color='#28a745')
+                ])
+                fig7.update_layout(title="Lan tỏa Kỹ năng số trong Sinh hoạt Chi bộ", barmode='group', template="plotly_white")
+                st.plotly_chart(fig7, use_container_width=True)
+            with r4c2: 
+                fig8 = go.Figure(data=[
+                    go.Bar(name='Cán bộ biết AI', x=df_sum['don_vi'], y=df_sum['kq_cb_ai'], marker_color='#004B87'),
+                    go.Bar(name='Dân có Kỹ năng số', x=df_sum['don_vi'], y=df_sum['kq_nd_kynang'], marker_color='#C8102E')
+                ])
+                fig8.update_layout(title="Kỹ năng số: Cán bộ vs Người dân", barmode='group', template="plotly_white")
+                st.plotly_chart(fig8, use_container_width=True)
 
 # --- TAB ADMIN (GIỮ NGUYÊN) ---
 if st.session_state.role == "admin":
