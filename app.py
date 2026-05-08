@@ -115,7 +115,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# HỆ THỐNG ĐĂNG NHẬP
+# HỆ THỐNG ĐĂNG NHẬP PHÂN QUYỀN 3 CẤP
 # ==========================================
 if "role" not in st.session_state:
     st.session_state.role = None
@@ -132,25 +132,44 @@ if st.session_state.role is None:
             st.markdown("<h2 style='color: #004B87; font-weight: 900; text-align: center;'>ĐĂNG NHẬP HỆ THỐNG<br>BÁO CÁO TGDV</h2>", unsafe_allow_html=True)
             pwd = st.text_input("🔑 Nhập mật khẩu truy cập:", type="password")
             if st.form_submit_button("Đăng nhập Hệ thống", use_container_width=True):
-                if pwd == "TGDV@2026": st.session_state.role = "user"; st.rerun()
-                elif pwd == "Admin@2026": st.session_state.role = "admin"; st.rerun()
-                else: st.error("❌ Mật khẩu không đúng!")
+                # Phân quyền 3 cấp ở đây
+                if pwd == "TGDV@2026": 
+                    st.session_state.role = "user"
+                    st.rerun()
+                elif pwd == "BaoCao@2026": # Mật khẩu mới cho đồng chí chuyên viên
+                    st.session_state.role = "chuyen_vien"
+                    st.rerun()
+                elif pwd == "Admin@2026": 
+                    st.session_state.role = "admin"
+                    st.rerun()
+                else: 
+                    st.error("❌ Mật khẩu không đúng!")
     st.stop()
 
 with st.sidebar:
-    st.markdown(f"<div style='background:#004B87; color:white; padding:10px; border-radius:5px; text-align:center;'>👤 Quyền: <b>{'ADMIN' if st.session_state.role == 'admin' else 'CƠ SỞ'}</b></div>", unsafe_allow_html=True)
+    # Hiển thị đúng tên chức danh theo phân quyền
+    if st.session_state.role == "admin": role_name = "ADMIN"
+    elif st.session_state.role == "chuyen_vien": role_name = "CHUYÊN VIÊN TỔNG HỢP"
+    else: role_name = "CƠ SỞ"
+    
+    st.markdown(f"<div style='background:#004B87; color:white; padding:10px; border-radius:5px; text-align:center;'>👤 Quyền: <b>{role_name}</b></div>", unsafe_allow_html=True)
     if st.button("🚪 Đăng xuất"):
         st.session_state.role = None; st.rerun()
 
 # ==========================================
-# TAB CHÍNH
+# TAB CHÍNH TÙY THEO QUYỀN TRUY CẬP
 # ==========================================
 st.markdown("<h1 class='main-header'>HỆ THỐNG THU THẬP BÁO CÁO CƠ SỞ</h1>", unsafe_allow_html=True)
 
 if st.session_state.role == "admin":
     tabs = st.tabs(["📝 NHẬP BÁO CÁO", "📊 THỐNG KÊ & BIỂU ĐỒ", "⚙️ QUẢN TRỊ ADMIN"])
     tab_nhap, tab_bieudo, tab_admin = tabs[0], tabs[1], tabs[2]
+elif st.session_state.role == "chuyen_vien":
+    # Chuyên viên chỉ thấy 2 tab, không có Admin
+    tabs = st.tabs(["📝 NHẬP BÁO CÁO", "📊 THỐNG KÊ & BIỂU ĐỒ"])
+    tab_nhap, tab_bieudo = tabs[0], tabs[1]
 else:
+    # User cơ sở chỉ thấy 1 tab
     tabs = st.tabs(["📝 NHẬP BÁO CÁO"])
     tab_nhap = tabs[0]
 
@@ -160,7 +179,6 @@ else:
 with tab_nhap:
     st.markdown("<div class='step-header'>1️⃣ BƯỚC 1: XÁC ĐỊNH ĐƠN VỊ & KỲ BÁO CÁO</div>", unsafe_allow_html=True)
     
-    # Đưa bộ chọn Đơn vị và Tháng ra ngoài form để nó có thể load dữ liệu cũ
     c_top1, c_top2, c_top3 = st.columns([2, 1.5, 1.5])
     don_vi = c_top1.selectbox("🏢 Đơn vị báo cáo:", load_units(), index=None, placeholder="Gõ tìm đơn vị...")
     ky_bao_cao = c_top3.selectbox("🗓️ Tháng báo cáo:", DANH_SACH_THANG, index=None, placeholder="Chọn tháng...")
@@ -168,7 +186,6 @@ with tab_nhap:
     old_data = {}
     nguoi_bc_default = ""
     
-    # Logic tìm kiếm dữ liệu cũ
     if don_vi and ky_bao_cao:
         all_data = load_data()
         for d in all_data:
@@ -179,7 +196,6 @@ with tab_nhap:
                 
     nguoi_bao_cao = c_top2.text_input("👤 Người báo cáo / SĐT:", value=nguoi_bc_default)
 
-    # Chỉ hiển thị form nhập liệu khi đã chọn đủ Đơn vị và Tháng
     if don_vi and ky_bao_cao:
         if old_data:
             st.success(f"💡 Đã tìm thấy báo cáo cũ của **{don_vi}** - **{ky_bao_cao}**. Hệ thống đã điền sẵn số liệu, đồng chí chỉ cần sửa những ô bị sai!")
@@ -327,9 +343,9 @@ with tab_nhap:
                     st.success(f"✅ Báo cáo {don_vi} - {ky_bao_cao} đã được ghi nhận thành công!")
 
 # ==========================================
-# TAB ADMIN - DASHBOARD & XUẤT EXCEL GỘP THÔNG MINH
+# TAB THỐNG KÊ & BIỂU ĐỒ (Dành cho Cả Admin và Chuyên viên)
 # ==========================================
-if st.session_state.role == "admin":
+if st.session_state.role in ["admin", "chuyen_vien"]:
     with tab_bieudo:
         data = load_data()
         if not data: st.warning("Chưa có số liệu.")
@@ -525,6 +541,10 @@ if st.session_state.role == "admin":
                     fig8.update_layout(title="Kỹ năng số: Cán bộ vs Người dân", barmode='group', template="plotly_white")
                     st.plotly_chart(fig8, use_container_width=True)
 
+# ==========================================
+# TAB ADMIN - CHỈ DÀNH CHO ADMIN
+# ==========================================
+if st.session_state.role == "admin":
     with tab_admin:
         st.markdown("<h3 style='color:#C8102E;'>⚠️ KHU VỰC QUẢN TRỊ DỮ LIỆU</h3>", unsafe_allow_html=True)
         c_del1, c_del2 = st.columns(2)
