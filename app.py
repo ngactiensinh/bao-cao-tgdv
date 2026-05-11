@@ -125,14 +125,16 @@ st.markdown("""
     }
 
     /* ---- SIDEBAR ---- */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #002E5A 0%, #004B87 100%);
-    }
-    [data-testid="stSidebar"] * { color: white !important; }
-    [data-testid="stSidebar"] .stSelectbox label { color: #A8C8E8 !important; font-weight: 600; font-size: 12px; }
-    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] { color: #A8C8E8 !important; }
-    [data-testid="stSidebar"] .stButton>button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); }
-    [data-testid="stSidebar"] .stButton>button:hover { background: #C8102E; }
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #002E5A 0%, #004B87 100%);
+    }
+    [data-testid="stSidebar"] * { color: white !important; }
+    /* Khắc phục lỗi chữ trắng trong ô Selectbox */
+    [data-testid="stSidebar"] div[data-baseweb="select"] * { color: #003A6E !important; font-weight: 600; }
+    [data-testid="stSidebar"] .stSelectbox label { color: #A8C8E8 !important; font-weight: 600; font-size: 12px; }
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] { color: #A8C8E8 !important; }
+    [data-testid="stSidebar"] .stButton>button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); }
+    [data-testid="stSidebar"] .stButton>button:hover { background: #C8102E; }
 
     /* ---- BADGE TRẠNG THÁI ---- */
     .badge {
