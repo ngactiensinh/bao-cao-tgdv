@@ -208,7 +208,12 @@ with tab_nhap:
                 c1, c2, c3 = st.columns(3)
                 dv_dk = c1.number_input("Mô hình DVK đăng ký", min_value=0, value=int(old.get('dv_mh_dangky',0)))
                 dv_hq = c2.number_input("Mô hình DVK hiệu quả", min_value=0, value=int(old.get('dv_mh_hieuqua',0)))
-                dv_cv = c3.number_input("Số cuộc vận động, TT", min_value=0, value=int(old.get('dv_cuocvandong',0)))
+                dv_moi = c3.number_input("Mô hình mới trong kỳ", min_value=0, value=int(old.get('dv_mh_moi',0)))
+                
+                c4, c5, c6 = st.columns(3)
+                dv_cv = c4.number_input("Số cuộc vận động, TT", min_value=0, value=int(old.get('dv_cuocvandong',0)))
+                dv_ntg = c5.number_input("Số lượt người tham gia", min_value=0, value=int(old.get('dv_nguoithamgia',0)))
+                dv_tx = c6.number_input("Số buổi đối thoại Nhân dân", min_value=0, value=int(old.get('dv_tiepxuc',0)))
 
             with st.expander("7. NHIỆM VỤ TRỌNG TÂM", expanded=False):
                 c1, c2, c3 = st.columns(3)
@@ -236,7 +241,7 @@ with tab_nhap:
                                "ld_vanban":ld_vb, "ld_thammuu":ld_tm, "ld_cuochop":ld_ch, "nq_hoinghi":nq_hn, "nq_nguoi":nq_ng, "nq_vanban":nq_vb, "nq_tyle":nq_tl,
                                "tt_tinbai":tt_tb, "tt_loa":tt_lo, "tt_buoi":tt_bu, "tt_nguoi":tt_nn, "tt_mxh_bai":tt_mxh, "tt_mxh_tuongtac":tt_ttmxh,
                                "dl_baocao":dl_bc, "dl_vande":dl_vd, "dl_xuly":dl_xl, "kg_chuongtrinh":kg_ct, "kg_lop":kg_lo, "kg_bd_chuyennghiep":kg_cn, "kg_clb_thanhlap":kg_cl, "kg_khokhan":kg_kk,
-                               "dv_mh_dangky":dv_dk, "dv_mh_hieuqua":dv_hq, "dv_cuocvandong":dv_cv, "nv_duocgiao":nv_dg, "nv_hoanthanh":nv_ht, "nv_ketqua":nv_kq,
+                               "dv_mh_dangky":dv_dk, "dv_mh_hieuqua":dv_hq, "dv_mh_moi":dv_moi, "dv_cuocvandong":dv_cv, "dv_nguoithamgia":dv_ntg, "dv_tiepxuc":dv_tx, "nv_duocgiao":nv_dg, "nv_hoanthanh":nv_ht, "nv_ketqua":nv_kq,
                                "bd_tinbai":bd_ti, "ts_chibo":ts_ch, "kq_chibo_cd":kq_cd, "ts_cbccvc":ts_cb, "kq_cb_ai":kq_ai, "tl_mohinh":tl_mo, "tl_khokhan":tl_kh}
                     data = load_data(); data = [d for d in data if not (d['don_vi']==dv and d['ky_bao_cao']==th)]
                     data.append(new_rec); save_data(data); st.success("✅ Thành công!")
