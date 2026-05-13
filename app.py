@@ -1,6 +1,6 @@
 """
-HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN SỬA LỖI
-Đã vá: lỗi tab trắng do biến l_bc/t_bc nằm sai scope, lỗi df_sum không tìm thấy
+HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN CHUẨN (V3.0)
+Đã vá: Phục hồi đủ 128 đơn vị, chống sập (trắng trang) do lỗi file JSON ở Tab Admin
 """
 
 import streamlit as st
@@ -52,13 +52,8 @@ st.markdown("""
 
     .metric-row { display: flex; gap: 16px; margin-bottom: 24px; }
     .metric-card {
-        flex: 1;
-        background: white;
-        padding: 20px 16px;
-        border-radius: 12px;
-        border-left: 5px solid #004B87;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-        text-align: center;
+        flex: 1; background: white; padding: 20px 16px; border-radius: 12px;
+        border-left: 5px solid #004B87; box-shadow: 0 2px 12px rgba(0,0,0,0.07); text-align: center;
     }
     .metric-card.red   { border-left-color: #C8102E; }
     .metric-card.green { border-left-color: #1A9E5C; }
@@ -71,38 +66,19 @@ st.markdown("""
     .metric-sub { font-size: 11px; color: #9CA3AF; margin-top: 3px; }
 
     .section-title {
-        display: flex; align-items: center; gap: 10px;
-        color: #003A6E; font-weight: 800; font-size: 1rem;
-        text-transform: uppercase; letter-spacing: 0.5px;
-        border-left: 4px solid #C8102E; padding-left: 12px;
+        display: flex; align-items: center; gap: 10px; color: #003A6E; font-weight: 800; font-size: 1rem;
+        text-transform: uppercase; letter-spacing: 0.5px; border-left: 4px solid #C8102E; padding-left: 12px;
         margin: 28px 0 16px 0;
     }
 
-    [data-testid="stForm"] {
-        background-color: #ffffff; padding: 24px;
-        border-radius: 14px; border: 1px solid #E5EAF0;
-        box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-    }
-    [data-testid="stExpander"] {
-        background-color: #FAFBFD !important;
-        border: 1px solid #E5EAF0 !important;
-        border-radius: 10px !important;
-        margin-bottom: 12px !important;
-    }
+    [data-testid="stForm"] { background-color: #ffffff; padding: 24px; border-radius: 14px; border: 1px solid #E5EAF0; box-shadow: 0 2px 16px rgba(0,0,0,0.06); }
+    [data-testid="stExpander"] { background-color: #FAFBFD !important; border: 1px solid #E5EAF0 !important; border-radius: 10px !important; margin-bottom: 12px !important; }
     [data-testid="stExpander"] summary { font-weight: 700 !important; color: #003A6E !important; }
 
-    .stButton>button {
-        background-color: #004B87; color: white; font-weight: 700;
-        border-radius: 8px; border: none; padding: 10px 20px; transition: all 0.2s;
-    }
-    .stButton>button:hover {
-        background-color: #C8102E; color: white;
-        transform: translateY(-1px); box-shadow: 0 4px 12px rgba(200,16,46,0.3);
-    }
+    .stButton>button { background-color: #004B87; color: white; font-weight: 700; border-radius: 8px; border: none; padding: 10px 20px; transition: all 0.2s; }
+    .stButton>button:hover { background-color: #C8102E; color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(200,16,46,0.3); }
 
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #002E5A 0%, #004B87 100%);
-    }
+    [data-testid="stSidebar"] { background: linear-gradient(180deg, #002E5A 0%, #004B87 100%); }
     [data-testid="stSidebar"] * { color: white !important; }
     [data-testid="stSidebar"] div[data-baseweb="select"] * { color: #003A6E !important; font-weight: 600; }
     [data-testid="stSidebar"] .stSelectbox label { color: #A8C8E8 !important; font-weight: 600; font-size: 12px; }
@@ -113,37 +89,22 @@ st.markdown("""
     .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
     .badge-success { background: #D1FAE5; color: #065F46; }
     .badge-danger  { background: #FEE2E2; color: #991B1B; }
-    .badge-info    { background: #DBEAFE; color: #1E40AF; }
 
     .progress-wrap { background: #E5EAF0; border-radius: 99px; height: 12px; overflow: hidden; margin: 8px 0; }
     .progress-fill { background: linear-gradient(90deg, #004B87, #1A9E5C); height: 100%; border-radius: 99px; transition: width 0.6s ease; }
 
-    .info-box {
-        background: #EFF6FF; border: 1px solid #BFDBFE; border-left: 4px solid #3B82F6;
-        border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #1E40AF; margin-bottom: 16px;
-    }
-    .warning-box {
-        background: #FFFBEB; border: 1px solid #FDE68A; border-left: 4px solid #F59E0B;
-        border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #92400E; margin-bottom: 16px;
-    }
+    .info-box { background: #EFF6FF; border: 1px solid #BFDBFE; border-left: 4px solid #3B82F6; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #1E40AF; margin-bottom: 16px; }
+    .warning-box { background: #FFFBEB; border: 1px solid #FDE68A; border-left: 4px solid #F59E0B; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #92400E; margin-bottom: 16px; }
 
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 6px; background: white; padding: 8px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
+    .stTabs [data-baseweb="tab-list"] { gap: 6px; background: white; padding: 8px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
     .stTabs [data-baseweb="tab"] { border-radius: 8px !important; font-weight: 700 !important; padding: 8px 18px !important; color: #6B7280 !important; }
     .stTabs [aria-selected="true"] { background: #004B87 !important; color: white !important; }
 
-    .stNumberInput label, .stTextInput label, .stSelectbox label, .stTextArea label {
-        font-weight: 600 !important; font-size: 13px !important; color: #374151 !important;
-    }
+    .stNumberInput label, .stTextInput label, .stSelectbox label, .stTextArea label { font-weight: 600 !important; font-size: 13px !important; color: #374151 !important; }
     .stDataFrame { border-radius: 10px; overflow: hidden; }
     hr { border: none; border-top: 1px solid #E5EAF0; margin: 20px 0; }
 
-    .login-wrap {
-        max-width: 420px; margin: 60px auto; background: white;
-        border-radius: 18px; padding: 40px 36px;
-        box-shadow: 0 12px 40px rgba(0,0,0,0.12); border-top: 6px solid #004B87;
-    }
+    .login-wrap { max-width: 420px; margin: 60px auto; background: white; border-radius: 18px; padding: 40px 36px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); border-top: 6px solid #004B87; }
     .login-logo { text-align: center; margin-bottom: 28px; }
     .login-logo h2 { color: #003A6E; font-weight: 900; font-size: 1.3rem; margin: 8px 0 4px; }
     .login-logo p  { color: #6B7280; font-size: 13px; }
@@ -158,19 +119,10 @@ DATA_FILE   = "dulieu_baocao.json"
 CONFIG_FILE = "config_donvi.json"
 
 DEFAULT_UNITS = [
-    "Đảng ủy Công an tỉnh", "Đảng ủy Quân sự tỉnh", "Đảng ủy các cơ quan Đảng tỉnh",
-    "Đảng ủy Ủy ban nhân dân tỉnh",
-    "Phường Mỹ Lâm", "Phường Minh Xuân", "Phường Nông Tiến", "Phường An Tường",
-    "Phường Bình Thuận", "Phường Hà Giang 1", "Phường Hà Giang 2",
-    "Xã Thượng Lâm", "Xã Lâm Bình", "Xã Minh Quang", "Xã Bình An", "Xã Côn Lôn",
-    "Xã Yên Hoa", "Xã Thượng Nông", "Xã Hồng Thái", "Xã Nà Hang", "Xã Tân Mỹ",
-    "Xã Yên Lập", "Xã Tân An", "Xã Chiêm Hóa", "Xã Hòa An", "Xã Kiên Đài",
-    "Xã Tri Phú", "Xã Kim Bình", "Xã Yên Nguyên", "Xã Yên Phú", "Xã Bạch Xa",
-    "Xã Phù Lưu", "Xã Hàm Yên", "Xã Bình Xa", "Xã Thái Sơn", "Xã Thái Hòa",
-    "Xã Hùng Lợi", "Xã Trung Sơn", "Xã Thái Bình", "Xã Tân Long", "Xã Xuân Vân",
-    "Xã Lực Hành", "Xã Yên Sơn", "Xã Nhữ Khê", "Xã Tân Trào", "Xã Minh Thanh",
-    "Xã Sơn Dương", "Xã Bình Ca", "Xã Tân Thanh", "Xã Sơn Thủy", "Xã Phú Lương",
-    "Xã Trường Sinh", "Xã Hồng Sơn", "Xã Đông Thọ",
+    "Đảng ủy Công an tỉnh", "Đảng ủy Quân sự tỉnh", "Đảng ủy các cơ quan Đảng tỉnh", "Đảng ủy Ủy ban nhân dân tỉnh",
+    "Phường Mỹ Lâm", "Phường Minh Xuân", "Phường Nông Tiến", "Phường An Tường", "Phường Bình Thuận", "Phường Hà Giang 1", "Phường Hà Giang 2",
+    "Xã Thượng Lâm", "Xã Lâm Bình", "Xã Minh Quang", "Xã Bình An", "Xã Côn Lôn", "Xã Yên Hoa", "Xã Thượng Nông", "Xã Hồng Thái", "Xã Nà Hang", "Xã Tân Mỹ", "Xã Yên Lập", "Xã Tân An", "Xã Chiêm Hóa", "Xã Hòa An", "Xã Kiên Đài", "Xã Tri Phú", "Xã Kim Bình", "Xã Yên Nguyên", "Xã Yên Phú", "Xã Bạch Xa", "Xã Phù Lưu", "Xã Hàm Yên", "Xã Bình Xa", "Xã Thái Sơn", "Xã Thái Hòa", "Xã Hùng Lợi", "Xã Trung Sơn", "Xã Thái Bình", "Xã Tân Long", "Xã Xuân Vân", "Xã Lực Hành", "Xã Yên Sơn", "Xã Nhữ Khê", "Xã Tân Trào", "Xã Minh Thanh", "Xã Sơn Dương", "Xã Bình Ca", "Xã Tân Thanh", "Xã Sơn Thủy", "Xã Phú Lương", "Xã Trường Sinh", "Xã Hồng Sơn", "Xã Đông Thọ",
+    "Xã Lũng Cú", "Xã Đồng Văn", "Xã Sà Phìn", "Xã Phố Bảng", "Xã Lũng Phìn", "Xã Sủng Máng", "Xã Sơn Vĩ", "Xã Mèo Vạc", "Xã Khâu Vai", "Xã Niêm Sơn", "Xã Tát Ngà", "Xã Thắng Mố", "Xã Bạch Đích", "Xã Yên Minh", "Xã Mậu Duệ", "Xã Du Già", "Xã Đường Thượng", "Xã Lùng Tám", "Xã Cán Tỷ", "Xã Nghĩa Thuận", "Xã Quản Bạ", "Xã Tùng Vài", "Xã Yên Cường", "Xã Đường Hồng", "Xã Bắc Mê", "Xã Minh Ngọc", "Xã Ngọc Đường", "Xã Lao Chải", "Xã Thanh Thủy", "Xã Phú Linh", "Xã Linh Hồ", "Xã Bạch Ngọc", "Xã Vị Xuyên", "Xã Việt Lâm", "Xã Tân Quang", "Xã Đồng Tâm", "Xã Liên Hiệp", "Xã Bằng Hành", "Xã Bắc Quang", "Xã Hùng An", "Xã Vĩnh Tuy", "Xã Đồng Yên", "Xã Tiên Yên", "Xã Xuân Giang", "Xã Bằng Lang", "Xã Yên Thành", "Xã Quang Bình", "Xã Tân Trịnh", "Xã Thông Nguyên", "Xã Hồ Thầu", "Xã Nậm Dịch", "Xã Tân Tiến", "Xã Hoàng Su Phì", "Xã Thàng Tín", "Xã Bản Máy", "Xã Pờ Ly Ngài", "Xã Xín Mần", "Xã Pà Vầy Sủ", "Xã Nấm Dẩn", "Xã Trung Thịnh", "Xã Khuôn Lùng", "Xã Trung Hà", "Xã Kiến Thiết", "Xã Hùng Đức", "Xã Minh Sơn", "Xã Minh Tân", "Xã Thuận Hòa", "Xã Tùng Bá", "Xã Thượng Sơn", "Xã Cao Bồ", "Xã Ngọc Long", "Xã Giáp Trung", "Xã Tiên Nguyên", "Xã Quảng Nguyên"
 ]
 
 DANH_SACH_THANG = [f"Tháng {i}" for i in range(1, 13)]
@@ -258,9 +210,12 @@ TEXT_KEYS = [s[0] for s in SCHEMA if s[3] == "text"]
 # HÀM TIỆN ÍCH
 # ==========================================
 def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+    try:
+        if os.path.exists(DATA_FILE):
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
     return []
 
 def save_data(data):
@@ -268,9 +223,17 @@ def save_data(data):
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 def load_units():
-    if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+    try:
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                u_list = json.load(f)
+                # Tự động phục hồi nếu danh sách bị lưu thiếu (<120 đơn vị)
+                if len(u_list) < 120:
+                    save_units(DEFAULT_UNITS)
+                    return DEFAULT_UNITS
+                return u_list
+    except Exception:
+        pass
     return DEFAULT_UNITS
 
 def save_units(units):
@@ -491,8 +454,7 @@ if st.session_state.role is None:
 
 
 # ==========================================
-# ► KHỞI TẠO SESSION STATE BỘ LỌC (FIX LỖI CHÍNH)
-# ► Phải khai báo TRƯỚC sidebar để các tab dưới đọc được
+# ► KHỞI TẠO SESSION STATE BỘ LỌC
 # ==========================================
 if "filter_ky" not in st.session_state:
     st.session_state.filter_ky = "Tháng"
@@ -517,7 +479,6 @@ with st.sidebar:
     if st.session_state.role in ("admin", "chuyen_vien"):
         st.markdown("### 🗓️ BỘ LỌC DỮ LIỆU")
 
-        # ► Lưu vào session_state thay vì biến cục bộ
         st.session_state.filter_ky = st.selectbox(
             "Kỳ tổng hợp",
             ["Tháng", "Quý I", "Quý II", "Quý III", "Quý IV",
@@ -545,7 +506,7 @@ with st.sidebar:
 
     st.markdown(
         f"<div style='font-size:10px; color:#6A8FAA; text-align:center; margin-top:12px;'>"
-        f"Phiên bản 2.2 · {datetime.now().strftime('%d/%m/%Y')}</div>",
+        f"Phiên bản 3.0 · {datetime.now().strftime('%d/%m/%Y')}</div>",
         unsafe_allow_html=True
     )
 
@@ -728,7 +689,7 @@ with tab_nhap:
                     "tl_mohinh": tl_mo, "tl_khokhan": tl_kh,
                 }
                 data = load_data()
-                data = [d for d in data if not (d["don_vi"] == dv and d["ky_bao_cao"] == th)]
+                data = [d for d in data if not (d.get("don_vi") == dv and d.get("ky_bao_cao") == th)]
                 data.append(new_rec)
                 save_data(data)
                 st.success(f"✅ **Đã lưu thành công** báo cáo của **{dv}** — {th}!")
@@ -740,7 +701,6 @@ with tab_nhap:
 # ==========================================
 if st.session_state.role in ("admin", "chuyen_vien"):
 
-    # ► Đọc bộ lọc từ session_state (không phụ thuộc scope sidebar)
     l_bc = st.session_state.filter_ky
     if l_bc == "Tháng":
         months_sel = [st.session_state.filter_thang]
@@ -757,7 +717,6 @@ if st.session_state.role in ("admin", "chuyen_vien"):
     u_miss  = [u for u in all_u if u not in u_done]
     rate    = (len(u_done) / len(all_u) * 100) if all_u else 0
 
-    # ► Tính df_sum một lần duy nhất, dùng chung cho cả Tab 2 & 3
     df_sum = build_summary_df(df_cur.copy(), ky_label) if not df_cur.empty else pd.DataFrame()
 
     # ── TAB 2: TIẾN ĐỘ & TRÍCH XUẤT ──
@@ -944,17 +903,20 @@ if st.session_state.role == "admin":
             st.markdown("#### 🗑️ Xóa Báo cáo")
             cur_data = load_data()
             if cur_data:
-                dv_list = sorted(set(d["don_vi"] for d in cur_data))
+                # Sử dụng hàm .get() để tránh lỗi nếu có bản ghi khuyết thiếu trường "don_vi"
+                dv_list = sorted(set(d.get("don_vi") for d in cur_data if d.get("don_vi")))
                 d_v = st.selectbox("Chọn đơn vị cần xóa:", dv_list, key="dv_del")
-                th_list = sorted(set(d["ky_bao_cao"] for d in cur_data if d["don_vi"] == d_v))
-                if th_list:
-                    t_h = st.selectbox("Chọn tháng:", th_list, key="th_del")
-                    st.warning(f"⚠️ Sẽ xóa báo cáo của **{d_v}** — **{t_h}**. Thao tác không thể hoàn tác!")
-                    if st.button("🔥 XÁC NHẬN XÓA BÁO CÁO", type="primary"):
-                        new_d = [d for d in cur_data if not (d["don_vi"] == d_v and d["ky_bao_cao"] == t_h)]
-                        save_data(new_d)
-                        st.success("✅ Đã xóa báo cáo!")
-                        st.rerun()
+                
+                if d_v:
+                    th_list = sorted(set(d.get("ky_bao_cao") for d in cur_data if d.get("don_vi") == d_v and d.get("ky_bao_cao")))
+                    if th_list:
+                        t_h = st.selectbox("Chọn tháng:", th_list, key="th_del")
+                        st.warning(f"⚠️ Sẽ xóa báo cáo của **{d_v}** — **{t_h}**. Thao tác không thể hoàn tác!")
+                        if st.button("🔥 XÁC NHẬN XÓA BÁO CÁO", type="primary"):
+                            new_d = [d for d in cur_data if not (d.get("don_vi") == d_v and d.get("ky_bao_cao") == t_h)]
+                            save_data(new_d)
+                            st.success("✅ Đã xóa báo cáo!")
+                            st.rerun()
             else:
                 st.info("Chưa có dữ liệu báo cáo nào.")
 
