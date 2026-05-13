@@ -1,6 +1,6 @@
 """
-HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN CHUẨN (V3.0)
-Đã vá: Phục hồi đủ 128 đơn vị, chống sập (trắng trang) do lỗi file JSON ở Tab Admin
+HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN CHUẨN (V3.1)
+Đã vá: Lỗi dập cầu dao (st.stop) gây trắng trang ở Tab Quản trị
 """
 
 import streamlit as st
@@ -227,7 +227,6 @@ def load_units():
         if os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
                 u_list = json.load(f)
-                # Tự động phục hồi nếu danh sách bị lưu thiếu (<120 đơn vị)
                 if len(u_list) < 120:
                     save_units(DEFAULT_UNITS)
                     return DEFAULT_UNITS
@@ -506,7 +505,7 @@ with st.sidebar:
 
     st.markdown(
         f"<div style='font-size:10px; color:#6A8FAA; text-align:center; margin-top:12px;'>"
-        f"Phiên bản 3.0 · {datetime.now().strftime('%d/%m/%Y')}</div>",
+        f"Phiên bản 3.1 · {datetime.now().strftime('%d/%m/%Y')}</div>",
         unsafe_allow_html=True
     )
 
@@ -552,148 +551,148 @@ with tab_nhap:
                 old = d
                 break
 
+    # === Thay st.stop() bằng rẽ nhánh if else để không làm sập các Tab khác ===
     if not dv or not th:
         st.markdown("""
         <div class='warning-box'>⚠️ Vui lòng chọn <strong>Đơn vị</strong> và <strong>Kỳ báo cáo</strong> trước khi nhập số liệu.</div>
         """, unsafe_allow_html=True)
-        st.stop()
-
-    if old:
-        st.markdown(f"""<div class='info-box'>💡 <strong>Đã tìm thấy báo cáo cũ</strong> của <em>{dv}</em> — {th}. Số liệu đã được điền sẵn.</div>""", unsafe_allow_html=True)
     else:
-        st.markdown(f"""<div class='info-box' style='background:#F0FDF4; border-color:#BBF7D0; border-left-color:#1A9E5C; color:#065F46;'>✨ Đang tạo báo cáo <strong>mới</strong> cho <em>{dv}</em> — {th}.</div>""", unsafe_allow_html=True)
+        if old:
+            st.markdown(f"""<div class='info-box'>💡 <strong>Đã tìm thấy báo cáo cũ</strong> của <em>{dv}</em> — {th}. Số liệu đã được điền sẵn.</div>""", unsafe_allow_html=True)
+        else:
+            st.markdown(f"""<div class='info-box' style='background:#F0FDF4; border-color:#BBF7D0; border-left-color:#1A9E5C; color:#065F46;'>✨ Đang tạo báo cáo <strong>mới</strong> cho <em>{dv}</em> — {th}.</div>""", unsafe_allow_html=True)
 
-    with st.form("f_nhap", clear_on_submit=False):
+        with st.form("f_nhap", clear_on_submit=False):
 
-        with st.expander("1️⃣  CÔNG TÁC LÃNH ĐẠO, CHỈ ĐẠO", expanded=True):
-            c1, c2, c3 = st.columns(3)
-            ld_vb = c1.number_input("📄 Số VB cấp ủy ban hành",    min_value=0, value=get_old_val(old, "ld_vanban"))
-            ld_tm = c2.number_input("📤 Số VB tham mưu cấp trên",  min_value=0, value=get_old_val(old, "ld_thammuu"))
-            ld_ch = c3.number_input("📅 Số cuộc họp, hội nghị",    min_value=0, value=get_old_val(old, "ld_cuochop"))
+            with st.expander("1️⃣  CÔNG TÁC LÃNH ĐẠO, CHỈ ĐẠO", expanded=True):
+                c1, c2, c3 = st.columns(3)
+                ld_vb = c1.number_input("📄 Số VB cấp ủy ban hành",    min_value=0, value=get_old_val(old, "ld_vanban"))
+                ld_tm = c2.number_input("📤 Số VB tham mưu cấp trên",  min_value=0, value=get_old_val(old, "ld_thammuu"))
+                ld_ch = c3.number_input("📅 Số cuộc họp, hội nghị",    min_value=0, value=get_old_val(old, "ld_cuochop"))
 
-        with st.expander("2️⃣  HỌC TẬP, QUÁN TRIỆT NGHỊ QUYẾT"):
-            c1, c2, c3, c4 = st.columns(4)
-            nq_hn = c1.number_input("🏛️ Số hội nghị NQ",           min_value=0,   value=get_old_val(old, "nq_hoinghi"))
-            nq_ng = c2.number_input("👥 Số người tham gia",         min_value=0,   value=get_old_val(old, "nq_nguoi"))
-            nq_vb = c3.number_input("📋 Số VB đã triển khai",       min_value=0,   value=get_old_val(old, "nq_vanban"))
-            nq_tl = c4.number_input("📊 Tỷ lệ ĐV tham gia (%)",    min_value=0.0, max_value=100.0, step=0.5,
-                                    value=get_old_val(old, "nq_tyle", 0.0))
+            with st.expander("2️⃣  HỌC TẬP, QUÁN TRIỆT NGHỊ QUYẾT"):
+                c1, c2, c3, c4 = st.columns(4)
+                nq_hn = c1.number_input("🏛️ Số hội nghị NQ",           min_value=0,   value=get_old_val(old, "nq_hoinghi"))
+                nq_ng = c2.number_input("👥 Số người tham gia",         min_value=0,   value=get_old_val(old, "nq_nguoi"))
+                nq_vb = c3.number_input("📋 Số VB đã triển khai",       min_value=0,   value=get_old_val(old, "nq_vanban"))
+                nq_tl = c4.number_input("📊 Tỷ lệ ĐV tham gia (%)",    min_value=0.0, max_value=100.0, step=0.5,
+                                        value=get_old_val(old, "nq_tyle", 0.0))
 
-        with st.expander("3️⃣  CÔNG TÁC TUYÊN TRUYỀN"):
-            c1, c2, c3, c4 = st.columns(4)
-            tt_tb  = c1.number_input("📰 Tin, bài, pano",           min_value=0, value=get_old_val(old, "tt_tinbai"))
-            tt_lo  = c2.number_input("🔊 Lượt loa truyền thanh",    min_value=0, value=get_old_val(old, "tt_loa"))
-            tt_bu  = c3.number_input("🗣️ Buổi TT miệng",            min_value=0, value=get_old_val(old, "tt_buoi"))
-            tt_nn  = c4.number_input("👂 Người nghe TT miệng",      min_value=0, value=get_old_val(old, "tt_nguoi"))
-            c5, c6 = st.columns(2)
-            tt_mxh  = c5.number_input("📱 Bài trên MXH / Cổng TT", min_value=0, value=get_old_val(old, "tt_mxh_bai"))
-            tt_ttmxh = c6.number_input("❤️ Lượt tương tác MXH",    min_value=0, value=get_old_val(old, "tt_mxh_tuongtac"))
+            with st.expander("3️⃣  CÔNG TÁC TUYÊN TRUYỀN"):
+                c1, c2, c3, c4 = st.columns(4)
+                tt_tb  = c1.number_input("📰 Tin, bài, pano",           min_value=0, value=get_old_val(old, "tt_tinbai"))
+                tt_lo  = c2.number_input("🔊 Lượt loa truyền thanh",    min_value=0, value=get_old_val(old, "tt_loa"))
+                tt_bu  = c3.number_input("🗣️ Buổi TT miệng",            min_value=0, value=get_old_val(old, "tt_buoi"))
+                tt_nn  = c4.number_input("👂 Người nghe TT miệng",      min_value=0, value=get_old_val(old, "tt_nguoi"))
+                c5, c6 = st.columns(2)
+                tt_mxh  = c5.number_input("📱 Bài trên MXH / Cổng TT", min_value=0, value=get_old_val(old, "tt_mxh_bai"))
+                tt_ttmxh = c6.number_input("❤️ Lượt tương tác MXH",    min_value=0, value=get_old_val(old, "tt_mxh_tuongtac"))
 
-        with st.expander("4️⃣  NẮM BẮT DƯ LUẬN XÃ HỘI"):
-            c1, c2, c3 = st.columns(3)
-            dl_bc = c1.number_input("📨 Báo cáo DLXH gửi đi",      min_value=0, value=get_old_val(old, "dl_baocao"))
-            dl_vd = c2.number_input("⚠️ Vấn đề nổi cộm",            min_value=0, value=get_old_val(old, "dl_vande"))
-            dl_xl = c3.number_input("✅ Vụ việc đã xử lý",           min_value=0, value=get_old_val(old, "dl_xuly"))
+            with st.expander("4️⃣  NẮM BẮT DƯ LUẬN XÃ HỘI"):
+                c1, c2, c3 = st.columns(3)
+                dl_bc = c1.number_input("📨 Báo cáo DLXH gửi đi",      min_value=0, value=get_old_val(old, "dl_baocao"))
+                dl_vd = c2.number_input("⚠️ Vấn đề nổi cộm",            min_value=0, value=get_old_val(old, "dl_vande"))
+                dl_xl = c3.number_input("✅ Vụ việc đã xử lý",           min_value=0, value=get_old_val(old, "dl_xuly"))
 
-        with st.expander("5️⃣  KHOA GIÁO, VĂN HÓA - VĂN NGHỆ"):
-            c1, c2, c3, c4 = st.columns(4)
-            kg_ct = c1.number_input("📚 CT tuyên truyền GD",        min_value=0, value=get_old_val(old, "kg_chuongtrinh"))
-            kg_lo = c2.number_input("🏥 Buổi Y tế/Môi trường",      min_value=0, value=get_old_val(old, "kg_lop"))
-            kg_cn = c3.number_input("🎭 Biểu diễn NT chuyên nghiệp",min_value=0, value=get_old_val(old, "kg_bd_chuyennghiep"))
-            kg_qc = c4.number_input("🎶 Biểu diễn NT quần chúng",   min_value=0, value=get_old_val(old, "kg_bd_quanchung"))
-            c5, c6, c7, c8 = st.columns(4)
-            kg_cl = c5.number_input("🎪 CLB VH-NT thành lập",       min_value=0, value=get_old_val(old, "kg_clb_thanhlap"))
-            kg_tv = c6.number_input("👤 Thành viên CLB",            min_value=0, value=get_old_val(old, "kg_clb_thanhvien"))
-            kg_lh = c7.number_input("🏆 HĐ Lễ hội, Thể thao",      min_value=0, value=get_old_val(old, "kg_hd_vhtt"))
-            kg_hd = c8.number_input("🎨 HĐ Văn hóa-Văn nghệ",      min_value=0, value=get_old_val(old, "kg_hoatdong"))
-            kg_kk = st.text_area("📝 Khó khăn, vướng mắc (Khoa giáo, VH-VN):", value=get_old_val(old, "kg_khokhan"), height=80)
+            with st.expander("5️⃣  KHOA GIÁO, VĂN HÓA - VĂN NGHỆ"):
+                c1, c2, c3, c4 = st.columns(4)
+                kg_ct = c1.number_input("📚 CT tuyên truyền GD",        min_value=0, value=get_old_val(old, "kg_chuongtrinh"))
+                kg_lo = c2.number_input("🏥 Buổi Y tế/Môi trường",      min_value=0, value=get_old_val(old, "kg_lop"))
+                kg_cn = c3.number_input("🎭 Biểu diễn NT chuyên nghiệp",min_value=0, value=get_old_val(old, "kg_bd_chuyennghiep"))
+                kg_qc = c4.number_input("🎶 Biểu diễn NT quần chúng",   min_value=0, value=get_old_val(old, "kg_bd_quanchung"))
+                c5, c6, c7, c8 = st.columns(4)
+                kg_cl = c5.number_input("🎪 CLB VH-NT thành lập",       min_value=0, value=get_old_val(old, "kg_clb_thanhlap"))
+                kg_tv = c6.number_input("👤 Thành viên CLB",            min_value=0, value=get_old_val(old, "kg_clb_thanhvien"))
+                kg_lh = c7.number_input("🏆 HĐ Lễ hội, Thể thao",      min_value=0, value=get_old_val(old, "kg_hd_vhtt"))
+                kg_hd = c8.number_input("🎨 HĐ Văn hóa-Văn nghệ",      min_value=0, value=get_old_val(old, "kg_hoatdong"))
+                kg_kk = st.text_area("📝 Khó khăn, vướng mắc (Khoa giáo, VH-VN):", value=get_old_val(old, "kg_khokhan"), height=80)
 
-        with st.expander("6️⃣  CÔNG TÁC DÂN VẬN (DÂN VẬN KHÉO)"):
-            c1, c2, c3 = st.columns(3)
-            dv_dk  = c1.number_input("🏅 Mô hình DVK đăng ký",     min_value=0, value=get_old_val(old, "dv_mh_dangky"))
-            dv_hq  = c2.number_input("⭐ Mô hình DVK hiệu quả",     min_value=0, value=get_old_val(old, "dv_mh_hieuqua"))
-            dv_moi = c3.number_input("🆕 Mô hình mới trong kỳ",     min_value=0, value=get_old_val(old, "dv_mh_moi"))
-            c4, c5, c6 = st.columns(3)
-            dv_cv  = c4.number_input("📢 Số cuộc vận động, TT",     min_value=0, value=get_old_val(old, "dv_cuocvandong"))
-            dv_ntg = c5.number_input("👥 Lượt người tham gia",      min_value=0, value=get_old_val(old, "dv_nguoithamgia"))
-            dv_tx  = c6.number_input("🤝 Buổi đối thoại Nhân dân",  min_value=0, value=get_old_val(old, "dv_tiepxuc"))
+            with st.expander("6️⃣  CÔNG TÁC DÂN VẬN (DÂN VẬN KHÉO)"):
+                c1, c2, c3 = st.columns(3)
+                dv_dk  = c1.number_input("🏅 Mô hình DVK đăng ký",     min_value=0, value=get_old_val(old, "dv_mh_dangky"))
+                dv_hq  = c2.number_input("⭐ Mô hình DVK hiệu quả",     min_value=0, value=get_old_val(old, "dv_mh_hieuqua"))
+                dv_moi = c3.number_input("🆕 Mô hình mới trong kỳ",     min_value=0, value=get_old_val(old, "dv_mh_moi"))
+                c4, c5, c6 = st.columns(3)
+                dv_cv  = c4.number_input("📢 Số cuộc vận động, TT",     min_value=0, value=get_old_val(old, "dv_cuocvandong"))
+                dv_ntg = c5.number_input("👥 Lượt người tham gia",      min_value=0, value=get_old_val(old, "dv_nguoithamgia"))
+                dv_tx  = c6.number_input("🤝 Buổi đối thoại Nhân dân",  min_value=0, value=get_old_val(old, "dv_tiepxuc"))
 
-        with st.expander("7️⃣  NHIỆM VỤ TRỌNG TÂM"):
-            c1, c2, c3 = st.columns(3)
-            nv_dg = c1.number_input("📌 Nhiệm vụ TT được giao",     min_value=0, value=get_old_val(old, "nv_duocgiao"))
-            nv_ht = c2.number_input("✅ Nhiệm vụ TT hoàn thành",    min_value=0, value=get_old_val(old, "nv_hoanthanh"))
-            nv_dk = c3.number_input("⏳ Nhiệm vụ đang triển khai",  min_value=0, value=get_old_val(old, "nv_dangtrienkhai"))
-            nv_kq = st.text_area("🏆 Kết quả thí điểm nổi bật:", value=get_old_val(old, "nv_ketqua"), height=80)
+            with st.expander("7️⃣  NHIỆM VỤ TRỌNG TÂM"):
+                c1, c2, c3 = st.columns(3)
+                nv_dg = c1.number_input("📌 Nhiệm vụ TT được giao",     min_value=0, value=get_old_val(old, "nv_duocgiao"))
+                nv_ht = c2.number_input("✅ Nhiệm vụ TT hoàn thành",    min_value=0, value=get_old_val(old, "nv_hoanthanh"))
+                nv_dk = c3.number_input("⏳ Nhiệm vụ đang triển khai",  min_value=0, value=get_old_val(old, "nv_dangtrienkhai"))
+                nv_kq = st.text_area("🏆 Kết quả thí điểm nổi bật:", value=get_old_val(old, "nv_ketqua"), height=80)
 
-        with st.expander("8️⃣  CHUYÊN ĐỀ: BÌNH DÂN HỌC VỤ SỐ"):
-            st.markdown("**Thông tin chung**")
-            c1, c2, c3 = st.columns(3)
-            bd_ti = c1.number_input("📰 Tin bài về CĐS",            min_value=0, value=get_old_val(old, "bd_tinbai"))
-            bd_ct = c2.number_input("🏆 Cuộc thi CĐS",              min_value=0, value=get_old_val(old, "bd_cuocthi"))
-            kq_tc = c3.number_input("🔧 Số Tổ công nghệ số",        min_value=0, value=get_old_val(old, "kq_tocongnghe"))
+            with st.expander("8️⃣  CHUYÊN ĐỀ: BÌNH DÂN HỌC VỤ SỐ"):
+                st.markdown("**Thông tin chung**")
+                c1, c2, c3 = st.columns(3)
+                bd_ti = c1.number_input("📰 Tin bài về CĐS",            min_value=0, value=get_old_val(old, "bd_tinbai"))
+                bd_ct = c2.number_input("🏆 Cuộc thi CĐS",              min_value=0, value=get_old_val(old, "bd_cuocthi"))
+                kq_tc = c3.number_input("🔧 Số Tổ công nghệ số",        min_value=0, value=get_old_val(old, "kq_tocongnghe"))
 
-            st.markdown("**Đối với Chi bộ**")
-            c4, c5, c6 = st.columns(3)
-            ts_ch = c4.number_input("🏛️ Tổng số Chi bộ",            min_value=0, value=get_old_val(old, "ts_chibo"))
-            kq_cd = c5.number_input("📖 CB SH chuyên đề số",        min_value=0, value=get_old_val(old, "kq_chibo_cd"))
-            kq_st = c6.number_input("📓 CB dùng Sổ tay ĐV số",      min_value=0, value=get_old_val(old, "kq_chibo_sotay"))
+                st.markdown("**Đối với Chi bộ**")
+                c4, c5, c6 = st.columns(3)
+                ts_ch = c4.number_input("🏛️ Tổng số Chi bộ",            min_value=0, value=get_old_val(old, "ts_chibo"))
+                kq_cd = c5.number_input("📖 CB SH chuyên đề số",        min_value=0, value=get_old_val(old, "kq_chibo_cd"))
+                kq_st = c6.number_input("📓 CB dùng Sổ tay ĐV số",      min_value=0, value=get_old_val(old, "kq_chibo_sotay"))
 
-            st.markdown("**Đối với CBCCVC**")
-            c7, c8, c9 = st.columns(3)
-            ts_cb = c7.number_input("👔 Tổng số CBCCVC",            min_value=0, value=get_old_val(old, "ts_cbccvc"))
-            kq_ai = c8.number_input("🤖 CB biết dùng AI",           min_value=0, value=get_old_val(old, "kq_cb_ai"))
-            kq_ck = c9.number_input("🎓 CB hoàn thành khóa CĐS",   min_value=0, value=get_old_val(old, "kq_cb_khoahoc"))
+                st.markdown("**Đối với CBCCVC**")
+                c7, c8, c9 = st.columns(3)
+                ts_cb = c7.number_input("👔 Tổng số CBCCVC",            min_value=0, value=get_old_val(old, "ts_cbccvc"))
+                kq_ai = c8.number_input("🤖 CB biết dùng AI",           min_value=0, value=get_old_val(old, "kq_cb_ai"))
+                kq_ck = c9.number_input("🎓 CB hoàn thành khóa CĐS",   min_value=0, value=get_old_val(old, "kq_cb_khoahoc"))
 
-            st.markdown("**Đối với Nhân dân**")
-            c10, c11, c12 = st.columns(3)
-            ts_nd = c10.number_input("👨‍👩‍👧 Tổng ND trưởng thành",     min_value=0, value=get_old_val(old, "ts_nd_truongthanh"))
-            kq_kn = c11.number_input("📱 ND có Kỹ năng số",         min_value=0, value=get_old_val(old, "kq_nd_kynang"))
-            kq_vi = c12.number_input("🪪 ND phổ cập VNeID",         min_value=0, value=get_old_val(old, "kq_nd_vneid"))
-            c13, c14 = st.columns(2)
-            kq_sm = c13.number_input("📲 ND dùng Smartphone",       min_value=0, value=get_old_val(old, "kq_nd_smartphone"))
-            kq_lp = c14.number_input("🏫 Buổi học cộng đồng",       min_value=0, value=get_old_val(old, "kq_lop_nd"))
+                st.markdown("**Đối với Nhân dân**")
+                c10, c11, c12 = st.columns(3)
+                ts_nd = c10.number_input("👨‍👩‍👧 Tổng ND trưởng thành",     min_value=0, value=get_old_val(old, "ts_nd_truongthanh"))
+                kq_kn = c11.number_input("📱 ND có Kỹ năng số",         min_value=0, value=get_old_val(old, "kq_nd_kynang"))
+                kq_vi = c12.number_input("🪪 ND phổ cập VNeID",         min_value=0, value=get_old_val(old, "kq_nd_vneid"))
+                c13, c14 = st.columns(2)
+                kq_sm = c13.number_input("📲 ND dùng Smartphone",       min_value=0, value=get_old_val(old, "kq_nd_smartphone"))
+                kq_lp = c14.number_input("🏫 Buổi học cộng đồng",       min_value=0, value=get_old_val(old, "kq_lop_nd"))
 
-        with st.expander("9️⃣  ĐÁNH GIÁ CHUNG & KIẾN NGHỊ"):
-            tl_mo = st.text_area("🌟 Mô hình hay, sáng tạo trong tháng:", value=get_old_val(old, "tl_mohinh"), height=100,
-                                 placeholder="Mô tả các mô hình, cách làm hay, sáng tạo...")
-            tl_kh = st.text_area("⚠️ Khó khăn, vướng mắc và kiến nghị:", value=get_old_val(old, "tl_khokhan"), height=100,
-                                 placeholder="Nêu rõ khó khăn và đề xuất hướng giải quyết...")
+            with st.expander("9️⃣  ĐÁNH GIÁ CHUNG & KIẾN NGHỊ"):
+                tl_mo = st.text_area("🌟 Mô hình hay, sáng tạo trong tháng:", value=get_old_val(old, "tl_mohinh"), height=100,
+                                     placeholder="Mô tả các mô hình, cách làm hay, sáng tạo...")
+                tl_kh = st.text_area("⚠️ Khó khăn, vướng mắc và kiến nghị:", value=get_old_val(old, "tl_khokhan"), height=100,
+                                     placeholder="Nêu rõ khó khăn và đề xuất hướng giải quyết...")
 
-        st.markdown("")
-        submitted = st.form_submit_button("🚀 GỬI / CẬP NHẬT BÁO CÁO", use_container_width=True, type="primary")
+            st.markdown("")
+            submitted = st.form_submit_button("🚀 GỬI / CẬP NHẬT BÁO CÁO", use_container_width=True, type="primary")
 
-        if submitted:
-            if not nguoi_bc.strip():
-                st.error("⚠️ Vui lòng điền **tên người báo cáo và số điện thoại**!")
-            else:
-                new_rec = {
-                    "don_vi": dv, "ky_bao_cao": th,
-                    "nguoi_bao_cao": nguoi_bc.strip(),
-                    "ngay_nop": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                    "ld_vanban": ld_vb, "ld_thammuu": ld_tm, "ld_cuochop": ld_ch,
-                    "nq_hoinghi": nq_hn, "nq_nguoi": nq_ng, "nq_vanban": nq_vb, "nq_tyle": nq_tl,
-                    "tt_tinbai": tt_tb, "tt_loa": tt_lo, "tt_buoi": tt_bu, "tt_nguoi": tt_nn,
-                    "tt_mxh_bai": tt_mxh, "tt_mxh_tuongtac": tt_ttmxh,
-                    "dl_baocao": dl_bc, "dl_vande": dl_vd, "dl_xuly": dl_xl,
-                    "kg_chuongtrinh": kg_ct, "kg_lop": kg_lo, "kg_bd_chuyennghiep": kg_cn,
-                    "kg_bd_quanchung": kg_qc, "kg_clb_thanhlap": kg_cl, "kg_clb_thanhvien": kg_tv,
-                    "kg_hd_vhtt": kg_lh, "kg_hoatdong": kg_hd, "kg_khokhan": kg_kk,
-                    "dv_mh_dangky": dv_dk, "dv_mh_hieuqua": dv_hq, "dv_mh_moi": dv_moi,
-                    "dv_cuocvandong": dv_cv, "dv_nguoithamgia": dv_ntg, "dv_tiepxuc": dv_tx,
-                    "nv_duocgiao": nv_dg, "nv_hoanthanh": nv_ht, "nv_dangtrienkhai": nv_dk, "nv_ketqua": nv_kq,
-                    "bd_tinbai": bd_ti, "bd_cuocthi": bd_ct, "kq_tocongnghe": kq_tc,
-                    "ts_chibo": ts_ch, "kq_chibo_cd": kq_cd, "kq_chibo_sotay": kq_st,
-                    "ts_cbccvc": ts_cb, "kq_cb_ai": kq_ai, "kq_cb_khoahoc": kq_ck,
-                    "ts_nd_truongthanh": ts_nd, "kq_nd_kynang": kq_kn, "kq_nd_vneid": kq_vi,
-                    "kq_nd_smartphone": kq_sm, "kq_lop_nd": kq_lp,
-                    "tl_mohinh": tl_mo, "tl_khokhan": tl_kh,
-                }
-                data = load_data()
-                data = [d for d in data if not (d.get("don_vi") == dv and d.get("ky_bao_cao") == th)]
-                data.append(new_rec)
-                save_data(data)
-                st.success(f"✅ **Đã lưu thành công** báo cáo của **{dv}** — {th}!")
-                st.balloons()
+            if submitted:
+                if not nguoi_bc.strip():
+                    st.error("⚠️ Vui lòng điền **tên người báo cáo và số điện thoại**!")
+                else:
+                    new_rec = {
+                        "don_vi": dv, "ky_bao_cao": th,
+                        "nguoi_bao_cao": nguoi_bc.strip(),
+                        "ngay_nop": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                        "ld_vanban": ld_vb, "ld_thammuu": ld_tm, "ld_cuochop": ld_ch,
+                        "nq_hoinghi": nq_hn, "nq_nguoi": nq_ng, "nq_vanban": nq_vb, "nq_tyle": nq_tl,
+                        "tt_tinbai": tt_tb, "tt_loa": tt_lo, "tt_buoi": tt_bu, "tt_nguoi": tt_nn,
+                        "tt_mxh_bai": tt_mxh, "tt_mxh_tuongtac": tt_ttmxh,
+                        "dl_baocao": dl_bc, "dl_vande": dl_vd, "dl_xuly": dl_xl,
+                        "kg_chuongtrinh": kg_ct, "kg_lop": kg_lo, "kg_bd_chuyennghiep": kg_cn,
+                        "kg_bd_quanchung": kg_qc, "kg_clb_thanhlap": kg_cl, "kg_clb_thanhvien": kg_tv,
+                        "kg_hd_vhtt": kg_lh, "kg_hoatdong": kg_hd, "kg_khokhan": kg_kk,
+                        "dv_mh_dangky": dv_dk, "dv_mh_hieuqua": dv_hq, "dv_mh_moi": dv_moi,
+                        "dv_cuocvandong": dv_cv, "dv_nguoithamgia": dv_ntg, "dv_tiepxuc": dv_tx,
+                        "nv_duocgiao": nv_dg, "nv_hoanthanh": nv_ht, "nv_dangtrienkhai": nv_dk, "nv_ketqua": nv_kq,
+                        "bd_tinbai": bd_ti, "bd_cuocthi": bd_ct, "kq_tocongnghe": kq_tc,
+                        "ts_chibo": ts_ch, "kq_chibo_cd": kq_cd, "kq_chibo_sotay": kq_st,
+                        "ts_cbccvc": ts_cb, "kq_cb_ai": kq_ai, "kq_cb_khoahoc": kq_ck,
+                        "ts_nd_truongthanh": ts_nd, "kq_nd_kynang": kq_kn, "kq_nd_vneid": kq_vi,
+                        "kq_nd_smartphone": kq_sm, "kq_lop_nd": kq_lp,
+                        "tl_mohinh": tl_mo, "tl_khokhan": tl_kh,
+                    }
+                    data = load_data()
+                    data = [d for d in data if not (d.get("don_vi") == dv and d.get("ky_bao_cao") == th)]
+                    data.append(new_rec)
+                    save_data(data)
+                    st.success(f"✅ **Đã lưu thành công** báo cáo của **{dv}** — {th}!")
+                    st.balloons()
 
 
 # ==========================================
@@ -903,7 +902,6 @@ if st.session_state.role == "admin":
             st.markdown("#### 🗑️ Xóa Báo cáo")
             cur_data = load_data()
             if cur_data:
-                # Sử dụng hàm .get() để tránh lỗi nếu có bản ghi khuyết thiếu trường "don_vi"
                 dv_list = sorted(set(d.get("don_vi") for d in cur_data if d.get("don_vi")))
                 d_v = st.selectbox("Chọn đơn vị cần xóa:", dv_list, key="dv_del")
                 
