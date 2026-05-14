@@ -1,6 +1,6 @@
 """
-HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN V4.2
-Đã vá: Lỗi chữ trắng tàng hình trong form Đổi mật khẩu ở Sidebar
+HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN V4.3
+Đã vá: Kẻ đậm đường viền ô nhập liệu Đổi mật khẩu để không bị chìm vào nền trắng
 """
 
 import streamlit as st
@@ -77,10 +77,22 @@ st.markdown("""
     [data-testid="stSidebar"] .stButton>button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); }
     [data-testid="stSidebar"] .stButton>button:hover { background: #C8102E; }
 
-    /* VÁ LỖI CHỮ TRẮNG Ở FORM ĐỔI MẬT KHẨU */
+    /* VÁ LỖI HIỂN THỊ Ô NHẬP LIỆU Ở FORM ĐỔI MẬT KHẨU SIDEBAR */
     [data-testid="stSidebar"] [data-testid="stExpander"] label, 
-    [data-testid="stSidebar"] [data-testid="stExpander"] p { color: #003A6E !important; font-weight: 700; }
-    [data-testid="stSidebar"] input { background-color: #FFFFFF !important; color: #003A6E !important; font-weight: bold !important; -webkit-text-fill-color: #003A6E !important; }
+    [data-testid="stSidebar"] [data-testid="stExpander"] p { color: #003A6E !important; font-weight: 700; margin-bottom: 4px; }
+    
+    [data-testid="stSidebar"] div[data-baseweb="input"] {
+        background-color: #FFFFFF !important;
+        border: 1.5px solid #004B87 !important;
+        border-radius: 6px !important;
+    }
+    
+    [data-testid="stSidebar"] input { 
+        color: #003A6E !important; 
+        font-weight: bold !important; 
+        -webkit-text-fill-color: #003A6E !important; 
+        background-color: transparent !important; 
+    }
 
     .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
     .badge-success { background: #D1FAE5; color: #065F46; }
@@ -561,7 +573,7 @@ with st.sidebar:
 
     st.markdown(
         f"<div style='font-size:10px; color:#6A8FAA; text-align:center; margin-top:12px;'>"
-        f"Phiên bản 4.2 · {datetime.now().strftime('%d/%m/%Y')}</div>",
+        f"Phiên bản 4.3 · {datetime.now().strftime('%d/%m/%Y')}</div>",
         unsafe_allow_html=True
     )
 
