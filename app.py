@@ -1,6 +1,6 @@
 """
-HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN V4.1
-Đã vá: Thêm tính năng Cơ sở tự Đổi Mật Khẩu, Admin quản lý và Reset mật khẩu
+HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN V4.2
+Đã vá: Lỗi chữ trắng tàng hình trong form Đổi mật khẩu ở Sidebar
 """
 
 import streamlit as st
@@ -68,6 +68,7 @@ st.markdown("""
     .stButton>button { background-color: #004B87; color: white; font-weight: 700; border-radius: 8px; border: none; padding: 10px 20px; transition: all 0.2s; }
     .stButton>button:hover { background-color: #C8102E; color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(200,16,46,0.3); }
 
+    /* ---- SIDEBAR ---- */
     [data-testid="stSidebar"] { background: linear-gradient(180deg, #002E5A 0%, #004B87 100%); }
     [data-testid="stSidebar"] * { color: white !important; }
     [data-testid="stSidebar"] div[data-baseweb="select"] * { color: #003A6E !important; font-weight: 600; }
@@ -75,6 +76,11 @@ st.markdown("""
     [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] { color: #A8C8E8 !important; }
     [data-testid="stSidebar"] .stButton>button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); }
     [data-testid="stSidebar"] .stButton>button:hover { background: #C8102E; }
+
+    /* VÁ LỖI CHỮ TRẮNG Ở FORM ĐỔI MẬT KHẨU */
+    [data-testid="stSidebar"] [data-testid="stExpander"] label, 
+    [data-testid="stSidebar"] [data-testid="stExpander"] p { color: #003A6E !important; font-weight: 700; }
+    [data-testid="stSidebar"] input { background-color: #FFFFFF !important; color: #003A6E !important; font-weight: bold !important; -webkit-text-fill-color: #003A6E !important; }
 
     .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
     .badge-success { background: #D1FAE5; color: #065F46; }
@@ -99,7 +105,7 @@ st.markdown("""
     .login-logo h2 { color: #003A6E; font-weight: 900; font-size: 1.3rem; margin: 8px 0 4px; }
     .login-logo p  { color: #6B7280; font-size: 13px; }
     
-    input:disabled { background-color: #F8FAFC !important; color: #003A6E !important; font-weight: 700; opacity: 1; -webkit-text-fill-color: #003A6E; }
+    input:disabled { background-color: #F8FAFC !important; color: #003A6E !important; font-weight: 700; opacity: 1; -webkit-text-fill-color: #003A6E !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -494,7 +500,6 @@ if "filter_thang" not in st.session_state:
 with st.sidebar:
     role_label, role_icon = ROLE_LABELS.get(st.session_state.role, ("?", "?"))
     
-    # Hiển thị Tên Đơn vị đối với tài khoản cơ sở
     hien_thi_ten = st.session_state.unit if st.session_state.role == "user" else role_label
 
     st.markdown(f"""
@@ -556,7 +561,7 @@ with st.sidebar:
 
     st.markdown(
         f"<div style='font-size:10px; color:#6A8FAA; text-align:center; margin-top:12px;'>"
-        f"Phiên bản 4.1 · {datetime.now().strftime('%d/%m/%Y')}</div>",
+        f"Phiên bản 4.2 · {datetime.now().strftime('%d/%m/%Y')}</div>",
         unsafe_allow_html=True
     )
 
