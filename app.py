@@ -1,6 +1,6 @@
 """
-HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN V4.0 (NÂNG CẤP SAU TẬP HUẤN)
-Đã vá: Phân quyền từng xã (pass riêng, khóa đơn vị), Nút tải Excel cho xã, Tài khoản Cán bộ Tổng hợp
+HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN V4.1
+Đã vá: Thêm tính năng Cơ sở tự Đổi Mật Khẩu, Admin quản lý và Reset mật khẩu
 """
 
 import streamlit as st
@@ -99,7 +99,6 @@ st.markdown("""
     .login-logo h2 { color: #003A6E; font-weight: 900; font-size: 1.3rem; margin: 8px 0 4px; }
     .login-logo p  { color: #6B7280; font-size: 13px; }
     
-    /* Làm mờ text input bị disabled (Tên xã) cho đẹp */
     input:disabled { background-color: #F8FAFC !important; color: #003A6E !important; font-weight: 700; opacity: 1; -webkit-text-fill-color: #003A6E; }
 </style>
 """, unsafe_allow_html=True)
@@ -110,6 +109,7 @@ st.markdown("""
 # ==========================================
 DATA_FILE   = "dulieu_baocao.json"
 CONFIG_FILE = "config_donvi.json"
+PASS_FILE   = "passwords.json"
 
 DEFAULT_UNITS = [
     "Đảng ủy Công an tỉnh", "Đảng ủy Quân sự tỉnh", "Đảng ủy các cơ quan Đảng tỉnh", "Đảng ủy Ủy ban nhân dân tỉnh",
@@ -200,7 +200,7 @@ TEXT_KEYS = [s[0] for s in SCHEMA if s[3] == "text"]
 
 
 # ==========================================
-# HÀM TIỆN ÍCH
+# HÀM TIỆN ÍCH QUẢN LÝ DỮ LIỆU
 # ==========================================
 def load_data():
     try:
@@ -232,10 +232,24 @@ def save_units(units):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(units, f, ensure_ascii=False, indent=4)
 
-# Tạo Dictionary Mật khẩu cho Cơ sở (TGDV@001, TGDV@002...)
-def get_unit_accounts():
+def load_passwords():
     units = load_units()
-    return {f"TGDV@{i+1:03d}": u for i, u in enumerate(units)}
+    defaults = {u: f"TGDV@{i+1:03d}" for i, u in enumerate(units)}
+    try:
+        if os.path.exists(PASS_FILE):
+            with open(PASS_FILE, "r", encoding="utf-8") as f:
+                saved = json.load(f)
+            for u in units:
+                if u not in saved:
+                    saved[u] = defaults[u]
+            return saved
+    except Exception:
+        pass
+    return defaults
+
+def save_passwords(pwds):
+    with open(PASS_FILE, "w", encoding="utf-8") as f:
+        json.dump(pwds, f, ensure_ascii=False, indent=4)
 
 def get_months_for_filter(filter_type):
     mapping = {
@@ -412,7 +426,6 @@ log_access("Thu thập Báo cáo v2")
 # ==========================================
 # ĐĂNG NHẬP VÀ PHÂN QUYỀN
 # ==========================================
-UNIT_ACCOUNTS = get_unit_accounts()
 PASSWORDS_QUAN_TRI = {
     "TongHop@2026": "chuyen_vien",
     "Admin@2026":   "admin",
@@ -449,13 +462,20 @@ if st.session_state.role is None:
                     st.session_state.role = role
                     st.session_state.unit = "ALL"
                     st.rerun()
-                # Check Pass Cơ sở (TGDV@001...)
-                elif pwd in UNIT_ACCOUNTS:
-                    st.session_state.role = "user"
-                    st.session_state.unit = UNIT_ACCOUNTS[pwd]
-                    st.rerun()
                 else:
-                    st.error("❌ Mật khẩu không đúng! Vui lòng liên hệ Quản trị viên.")
+                    # Check Pass Cơ sở
+                    pwds = load_passwords()
+                    matched_unit = None
+                    for u, p in pwds.items():
+                        if p == pwd:
+                            matched_unit = u
+                            break
+                    if matched_unit:
+                        st.session_state.role = "user"
+                        st.session_state.unit = matched_unit
+                        st.rerun()
+                    else:
+                        st.error("❌ Mật khẩu không đúng! Vui lòng liên hệ Quản trị viên.")
     st.stop()
 
 
@@ -474,7 +494,7 @@ if "filter_thang" not in st.session_state:
 with st.sidebar:
     role_label, role_icon = ROLE_LABELS.get(st.session_state.role, ("?", "?"))
     
-    # Nếu là CƠ SỞ thì hiển thị tên Xã ở góc Sidebar
+    # Hiển thị Tên Đơn vị đối với tài khoản cơ sở
     hien_thi_ten = st.session_state.unit if st.session_state.role == "user" else role_label
 
     st.markdown(f"""
@@ -506,6 +526,29 @@ with st.sidebar:
             )
         st.markdown("---")
 
+    # TÍNH NĂNG ĐỔI MẬT KHẨU CHO CƠ SỞ
+    if st.session_state.role == "user":
+        with st.expander("🔐 ĐỔI MẬT KHẨU", expanded=False):
+            with st.form("form_doi_pass", clear_on_submit=True):
+                old_p = st.text_input("Mật khẩu hiện tại:", type="password")
+                new_p = st.text_input("Mật khẩu mới:", type="password")
+                cf_p  = st.text_input("Xác nhận MK mới:", type="password")
+                
+                if st.form_submit_button("Cập nhật", type="primary"):
+                    pwds = load_passwords()
+                    if pwds.get(st.session_state.unit) != old_p:
+                        st.error("❌ Mật khẩu hiện tại không đúng!")
+                    elif new_p != cf_p:
+                        st.error("❌ Xác nhận mật khẩu không khớp!")
+                    elif len(new_p) < 6:
+                        st.error("❌ Mật khẩu mới phải từ 6 ký tự trở lên!")
+                    elif new_p in pwds.values() or new_p in PASSWORDS_QUAN_TRI.keys():
+                        st.error("❌ Mật khẩu này đã có đơn vị sử dụng. Vui lòng chọn mật khẩu khác!")
+                    else:
+                        pwds[st.session_state.unit] = new_p
+                        save_passwords(pwds)
+                        st.success("✅ Đổi mật khẩu thành công!")
+
     if st.button("🚪 Đăng xuất", use_container_width=True):
         st.session_state.role = None
         st.session_state.unit = None
@@ -513,7 +556,7 @@ with st.sidebar:
 
     st.markdown(
         f"<div style='font-size:10px; color:#6A8FAA; text-align:center; margin-top:12px;'>"
-        f"Phiên bản 4.0 · {datetime.now().strftime('%d/%m/%Y')}</div>",
+        f"Phiên bản 4.1 · {datetime.now().strftime('%d/%m/%Y')}</div>",
         unsafe_allow_html=True
     )
 
@@ -549,7 +592,6 @@ with tab_nhap:
     st.markdown("<div class='section-title'>🏢 XÁC ĐỊNH ĐƠN VỊ VÀ KỲ BÁO CÁO</div>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([2.5, 1.5, 1.5])
     
-    # 🌟 NẾU LÀ CƠ SỞ: Khóa tên đơn vị lại, không cho chọn
     if st.session_state.role == "user":
         dv = st.session_state.unit
         c1.text_input("🏢 Đơn vị báo cáo", value=dv, disabled=True)
@@ -707,11 +749,8 @@ with tab_nhap:
                     save_data(data)
                     st.success(f"✅ **Đã lưu thành công** báo cáo của **{dv}** — {th}!")
                     st.balloons()
-                    
-                    # Nạp lại dữ liệu cũ để chuẩn bị cho nút tải file bên dưới
                     old = new_rec
 
-        # 🌟 NÚT TẢI BÁO CÁO EXCEL DÀNH RIÊNG CHO ĐƠN VỊ
         if st.session_state.role == "user" and old:
             st.markdown("<div style='height: 15px'></div>", unsafe_allow_html=True)
             df_unit = pd.DataFrame([old])
@@ -962,6 +1001,25 @@ if st.session_state.role == "admin":
                 )
 
         with col_adm2:
+            st.markdown("#### 🔐 Quản lý Mật khẩu Cơ sở")
+            st.info("Các đơn vị có thể tự đổi mật khẩu. Nếu đơn vị báo quên, Admin có thể Reset tại đây.")
+            
+            pwds = load_passwords()
+            df_acc = pd.DataFrame([{"Đơn vị": k, "Mật khẩu": v} for k, v in pwds.items()])
+            st.dataframe(df_acc, hide_index=True, height=200)
+            
+            with st.form("form_reset_pass"):
+                u_reset = st.selectbox("🔄 Chọn đơn vị cần Reset mật khẩu:", df_acc["Đơn vị"].tolist())
+                if st.form_submit_button("Khôi phục Mật khẩu Mặc định", type="secondary"):
+                    units = load_units()
+                    idx = units.index(u_reset)
+                    default_p = f"TGDV@{idx+1:03d}"
+                    pwds[u_reset] = default_p
+                    save_passwords(pwds)
+                    st.success(f"✅ Đã khôi phục mật khẩu của {u_reset} thành: {default_p}")
+                    st.rerun()
+
+            st.markdown("---")
             st.markdown("#### 🏢 Quản lý Danh sách Đơn vị")
             u_list = load_units()
 
@@ -989,11 +1047,3 @@ if st.session_state.role == "admin":
                         st.rerun()
                     else:
                         st.warning("⚠️ Vui lòng chọn đơn vị cần xóa!")
-
-            st.markdown("---")
-            st.markdown("#### 🔐 Danh sách Tài khoản Cơ sở")
-            st.info("Mật khẩu được tạo tự động tương ứng với từng đơn vị.")
-            df_acc = pd.DataFrame(list(get_unit_accounts().items()), columns=["Mật khẩu đăng nhập", "Đơn vị"])
-            st.dataframe(df_acc, hide_index=True, height=250)
-            csv = df_acc.to_csv(index=False).encode('utf-8-sig')
-            st.download_button("⬇️ Tải Danh sách Tài khoản (CSV)", data=csv, file_name="Danh_sach_tai_khoan_coso.csv", mime="text/csv")
