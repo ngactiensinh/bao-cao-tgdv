@@ -1,6 +1,6 @@
 """
-HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN V4.2
-Đã vá: Lỗi trắng xóa form Đổi mật khẩu trong Sidebar (CSS override)
+HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN V4.1
+Đã vá: Thêm tính năng Cơ sở tự Đổi Mật Khẩu, Admin quản lý và Reset mật khẩu
 """
 
 import streamlit as st
@@ -61,7 +61,6 @@ st.markdown("""
         margin: 28px 0 16px 0;
     }
 
-    /* Form và Expander dùng chung ở nội dung chính */
     [data-testid="stForm"] { background-color: #ffffff; padding: 24px; border-radius: 14px; border: 1px solid #E5EAF0; box-shadow: 0 2px 16px rgba(0,0,0,0.06); }
     [data-testid="stExpander"] { background-color: #FAFBFD !important; border: 1px solid #E5EAF0 !important; border-radius: 10px !important; margin-bottom: 12px !important; }
     [data-testid="stExpander"] summary { font-weight: 700 !important; color: #003A6E !important; }
@@ -69,7 +68,6 @@ st.markdown("""
     .stButton>button { background-color: #004B87; color: white; font-weight: 700; border-radius: 8px; border: none; padding: 10px 20px; transition: all 0.2s; }
     .stButton>button:hover { background-color: #C8102E; color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(200,16,46,0.3); }
 
-    /* CSS RIÊNG CHO SIDEBAR */
     [data-testid="stSidebar"] { background: linear-gradient(180deg, #002E5A 0%, #004B87 100%); }
     [data-testid="stSidebar"] * { color: white !important; }
     [data-testid="stSidebar"] div[data-baseweb="select"] * { color: #003A6E !important; font-weight: 600; }
@@ -77,15 +75,6 @@ st.markdown("""
     [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] { color: #A8C8E8 !important; }
     [data-testid="stSidebar"] .stButton>button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); }
     [data-testid="stSidebar"] .stButton>button:hover { background: #C8102E; }
-
-    /* FIX LỖI FORM ĐỔI MẬT KHẨU TRONG SIDEBAR TRẮNG XÓA */
-    [data-testid="stSidebar"] [data-testid="stExpander"] { background-color: rgba(0,0,0,0.15) !important; border: 1px solid rgba(255,255,255,0.1) !important; }
-    [data-testid="stSidebar"] [data-testid="stExpander"] summary { color: #FFD700 !important; }
-    [data-testid="stSidebar"] [data-testid="stForm"] { background-color: transparent !important; border: none !important; box-shadow: none !important; padding: 10px !important; }
-    [data-testid="stSidebar"] .stTextInput label { color: #A8C8E8 !important; }
-    [data-testid="stSidebar"] .stTextInput input { background-color: rgba(255,255,255,0.1) !important; color: white !important; border: 1px solid rgba(255,255,255,0.3) !important; }
-    [data-testid="stSidebar"] div[data-testid="stError"] { background-color: rgba(239,68,68,0.2) !important; border: 1px solid #EF4444 !important; }
-    [data-testid="stSidebar"] div[data-testid="stSuccess"] { background-color: rgba(16,185,129,0.2) !important; border: 1px solid #10B981 !important; }
 
     .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
     .badge-success { background: #D1FAE5; color: #065F46; }
@@ -110,7 +99,6 @@ st.markdown("""
     .login-logo h2 { color: #003A6E; font-weight: 900; font-size: 1.3rem; margin: 8px 0 4px; }
     .login-logo p  { color: #6B7280; font-size: 13px; }
     
-    /* Làm mờ text input bị disabled (Tên xã) cho đẹp */
     input:disabled { background-color: #F8FAFC !important; color: #003A6E !important; font-weight: 700; opacity: 1; -webkit-text-fill-color: #003A6E; }
 </style>
 """, unsafe_allow_html=True)
@@ -568,7 +556,7 @@ with st.sidebar:
 
     st.markdown(
         f"<div style='font-size:10px; color:#6A8FAA; text-align:center; margin-top:12px;'>"
-        f"Phiên bản 4.2 · {datetime.now().strftime('%d/%m/%Y')}</div>",
+        f"Phiên bản 4.1 · {datetime.now().strftime('%d/%m/%Y')}</div>",
         unsafe_allow_html=True
     )
 
