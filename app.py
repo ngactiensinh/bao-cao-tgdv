@@ -1,6 +1,6 @@
 """
-HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN V4.3
-Đã vá: Kẻ đậm đường viền ô nhập liệu Đổi mật khẩu để không bị chìm vào nền trắng
+HỆ THỐNG THU THẬP BÁO CÁO TGDV - PHIÊN BẢN V4.4
+Đã vá: Thêm ô tìm kiếm mật khẩu cơ sở và phục hồi nút xuất danh sách tài khoản CSV
 """
 
 import streamlit as st
@@ -573,7 +573,7 @@ with st.sidebar:
 
     st.markdown(
         f"<div style='font-size:10px; color:#6A8FAA; text-align:center; margin-top:12px;'>"
-        f"Phiên bản 4.3 · {datetime.now().strftime('%d/%m/%Y')}</div>",
+        f"Phiên bản 4.4 · {datetime.now().strftime('%d/%m/%Y')}</div>",
         unsafe_allow_html=True
     )
 
@@ -1023,7 +1023,24 @@ if st.session_state.role == "admin":
             
             pwds = load_passwords()
             df_acc = pd.DataFrame([{"Đơn vị": k, "Mật khẩu": v} for k, v in pwds.items()])
-            st.dataframe(df_acc, hide_index=True, height=200)
+
+            # --- Thêm ô tìm kiếm mật khẩu ---
+            search_pwd = st.text_input("🔍 Tìm kiếm mật khẩu theo tên đơn vị:", placeholder="Gõ tên xã/phường...")
+            df_acc_display = df_acc.copy()
+            if search_pwd:
+                df_acc_display = df_acc_display[df_acc_display["Đơn vị"].str.contains(search_pwd, case=False, na=False)]
+
+            st.dataframe(df_acc_display, hide_index=True, height=200)
+
+            # --- Phục hồi nút tải CSV ---
+            csv = df_acc.to_csv(index=False).encode('utf-8-sig')
+            st.download_button(
+                label="⬇️ Tải Danh sách Tài khoản (CSV)",
+                data=csv,
+                file_name=f"Danh_sach_tai_khoan_{datetime.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
             
             with st.form("form_reset_pass"):
                 u_reset = st.selectbox("🔄 Chọn đơn vị cần Reset mật khẩu:", df_acc["Đơn vị"].tolist())
